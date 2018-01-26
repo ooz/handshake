@@ -1,13 +1,22 @@
 window.onload = function() {
 
-    var game = new Phaser.Game(300, 600, Phaser.AUTO, '', {
+    const WIDTH = 300.0;
+    const HEIGHT = 600.0;
+    const WIDTH_HEIGHT_RATIO = WIDTH / HEIGHT;
+    const EXTENSION_SPEED = 2000.0;
+
+    var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', {
         preload: preload,
         create: create,
-        update: update
+        update: update,
+        render: render
     });
 
     var logo;
-    var arm;
+    var arm = {
+        move: false,
+        extended: false
+    };
 
     function preload () {
         game.load.image('logo', 'phaser.png');
@@ -19,24 +28,74 @@ window.onload = function() {
         game.stage.backgroundColor = '#4d4d4d';
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
-        logo = game.add.sprite(game.world.centerX, game.world.centerY, 'logo');
-        logo.anchor.setTo(0.5, 0.5);
+        logo = game.add.sprite(0, 0, 'logo');
 
-        arm = game.add.sprite(game.world.centerX, game.world.centerY, 'arm');
-        arm.angle = -30.0;
+        arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
+        arm.sprite.anchor.setTo(0.5, 0.5);
+        arm.sprite.angle = -30.0;
+        game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
 
-        game.input.onDown.add(fullscreen, this);
+        game.input.onDown.add(onDown, this);
+        game.input.touch.onTouchStart.add(onDown, this);
     }
 
-    function fullscreen() {
+    function onDown() {
         if (!game.scale.isFullScreen) {
             game.scale.startFullScreen(false);
+            return;
+        }
+
+        updateCommands();
+    }
+
+    function updateCommands() {
+        arm.move = true;
+        if (arm.extended) {
+            console.log("collapsing");
+        } else {
+            console.log("extending");
         }
     }
 
     function update() {
+        updateArm();
     }
 
+    function updateArm() {
+        if (!arm.extended && arm.move) {
+            arm.sprite.body.velocity.y = -1.0 * EXTENSION_SPEED;
+            arm.sprite.body.velocity.x = -1.0 * EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
+            console.log('negative velo');
+        } else if (arm.extended && arm.move) {
+            arm.sprite.body.velocity.y = EXTENSION_SPEED;
+            arm.sprite.body.velocity.x = EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
+            console.log('positive velo');
+        }
 
+        if ((arm.sprite.x < 1.5 * WIDTH / 2.0)
+            || (arm.sprite.y < 1.5 * HEIGHT / 2.0)) {
+            arm.extended = true;
+            arm.sprite.x = 1.5 * WIDTH / 2.0;
+            arm.sprite.y = 1.5 * HEIGHT / 2.0;
+            stopArmExtension();
+        } else if (arm.sprite.x > WIDTH || arm.sprite.y > HEIGHT) {
+            arm.extended = false;
+            arm.sprite.x = WIDTH;
+            arm.sprite.y = HEIGHT;
+            stopArmExtension();
+        }
+    }
+
+    function stopArmExtension() {
+        arm.sprite.body.velocity.x = 0.0;
+        arm.sprite.body.velocity.y = 0.0;
+        arm.move = false;
+        console.log('stop extension');
+    }
+
+    function render() {
+        game.debug.inputInfo(32.0, 32.0);
+        game.debug.pointer(game.input.activePointer);
+    }
 
 };
