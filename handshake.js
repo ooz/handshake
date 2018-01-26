@@ -16,7 +16,8 @@ window.onload = function() {
     var arm = {
         move: false,
         extended: false,
-        gyro: null
+        gyro: null,
+        shake: false
     };
 
     function preload () {
@@ -74,6 +75,7 @@ window.onload = function() {
     }
 
     function updateArm() {
+        // Extend
         if (!arm.extended && arm.move) {
             arm.sprite.body.velocity.y = -1.0 * EXTENSION_SPEED;
             arm.sprite.body.velocity.x = -1.0 * EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
@@ -84,6 +86,7 @@ window.onload = function() {
             console.log('positive velo');
         }
 
+        // Extension limit checks
         if ((arm.sprite.x < 1.5 * WIDTH / 2.0)
             || (arm.sprite.y < 1.5 * HEIGHT / 2.0)) {
             arm.extended = true;
@@ -95,6 +98,11 @@ window.onload = function() {
             arm.sprite.x = WIDTH;
             arm.sprite.y = HEIGHT;
             stopArmExtension();
+        }
+
+        // Shaking
+        if (arm.gyro != null) {
+
         }
     }
 
@@ -109,14 +117,18 @@ window.onload = function() {
         game.debug.inputInfo(32.0, 32.0);
         game.debug.pointer(game.input.activePointer);
         if (arm.gyro != null) {
-            debug("x" + arm.gyro.x + " y" + arm.gyro.y + " z" + arm.gyro.z);
+            debug("x" + round(arm.gyro.x) + " y" + round(arm.gyro.y) + " z" + round(arm.gyro.z));
         } else {
             debug("no gyro :(")
         }
     }
 
-    function debug(text) {
-        game.debug.text(text, 0.0, HEIGHT - 20.0);
+    function debug(text, offset=20.0) {
+        game.debug.text(text, 0.0, HEIGHT - offset);
+    }
+
+    function round(value) {
+        return Math.round(value * 100) / 100;
     }
 
 };
