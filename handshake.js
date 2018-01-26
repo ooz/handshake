@@ -110,6 +110,8 @@ window.onload = function() {
         game.debug.pointer(game.input.activePointer);
         if (arm.gyro != null) {
             debug("x" + arm.gyro.x + " y" + arm.gyro.y + " z" + arm.gyro.z);
+        } else {
+            debug("no gyro :(")
         }
     }
 
