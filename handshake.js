@@ -59,6 +59,7 @@ window.onload = function() {
 
     function onGyro(o) {
         arm.gyro = o;
+        arm.gyro_ = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
     }
 
     function updateCommands() {
@@ -117,7 +118,8 @@ window.onload = function() {
         game.debug.inputInfo(32.0, 32.0);
         game.debug.pointer(game.input.activePointer);
         if (arm.gyro != null) {
-            debug("x" + round(arm.gyro.x) + " y" + round(arm.gyro.y) + " z" + round(arm.gyro.z));
+            debug("gyro " + round(arm.gyro_));
+            //debug("x" + round(arm.gyro.x) + " y" + round(arm.gyro.y) + " z" + round(arm.gyro.z));
         } else {
             debug("no gyro :(")
         }
