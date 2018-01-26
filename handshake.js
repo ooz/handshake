@@ -7,9 +7,11 @@ window.onload = function() {
     });
 
     var logo;
+    var arm;
 
     function preload () {
         game.load.image('logo', 'phaser.png');
+        game.load.image('arm', 'assets/arm.png');
     }
 
     function create () {
@@ -19,6 +21,9 @@ window.onload = function() {
 
         logo = game.add.sprite(game.world.centerX, game.world.centerY, 'logo');
         logo.anchor.setTo(0.5, 0.5);
+
+        arm = game.add.sprite(game.world.centerX, game.world.centerY, 'arm');
+        arm.angle = -30.0;
 
         game.input.onDown.add(fullscreen, this);
     }
@@ -30,7 +35,6 @@ window.onload = function() {
     }
 
     function update() {
-        logo;
     }
 
 
