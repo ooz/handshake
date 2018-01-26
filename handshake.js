@@ -4,6 +4,7 @@ window.onload = function() {
     const HEIGHT = 600.0;
     const WIDTH_HEIGHT_RATIO = WIDTH / HEIGHT;
     const EXTENSION_SPEED = 2000.0;
+    const SHAKE_AMPLITUDE = 10.0; // in degree
 
     var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', {
         preload: preload,
@@ -20,17 +21,24 @@ window.onload = function() {
         shake: false
     };
 
+    var people = {
+        businessman: {}
+    };
+
     function preload () {
-        game.load.image('logo', 'phaser.png');
+        //game.load.image('logo', 'phaser.png');
+        game.load.image('businessman', 'assets/businessman-complete.png')
         game.load.image('arm', 'assets/arm.png');
     }
 
     function create () {
         // Maintain aspect ratio
-        game.stage.backgroundColor = '#4d4d4d';
+        game.stage.backgroundColor = '#fafa00';
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
-        logo = game.add.sprite(0, 0, 'logo');
+        //logo = game.add.sprite(0, 0, 'logo');
+        people.businessman.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman');
+        people.businessman.sprite.anchor.setTo(0.5, 0.5);
 
         arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
         arm.sprite.anchor.setTo(0.5, 0.5);
@@ -41,7 +49,7 @@ window.onload = function() {
         //game.input.touch.onTouchStart.add(onDown, this);
 
         if (gyro.hasFeature('devicemotion')) {
-            gyro.frequency = 100;
+            gyro.frequency = 50; // ms
             gyro.startTracking(onGyro);
         } else {
             console.log('no gyro :(');
@@ -59,7 +67,7 @@ window.onload = function() {
 
     function onGyro(o) {
         arm.gyro = o;
-        arm.gyro_ = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
+        arm.gyroMagnitude = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
     }
 
     function updateCommands() {
@@ -102,7 +110,10 @@ window.onload = function() {
         }
 
         // Shaking
-        if (arm.gyro != null) {
+        if (arm.gyro != null && arm.gyroMagnitude >= 20.0) {
+            arm.shake = true;
+        }
+        if (arm.shake) {
 
         }
     }
@@ -118,7 +129,7 @@ window.onload = function() {
         game.debug.inputInfo(32.0, 32.0);
         game.debug.pointer(game.input.activePointer);
         if (arm.gyro != null) {
-            debug("gyro " + round(arm.gyro_));
+            debug("gyro " + round(arm.gyroMagnitude));
             //debug("x" + round(arm.gyro.x) + " y" + round(arm.gyro.y) + " z" + round(arm.gyro.z));
         } else {
             debug("no gyro :(")
