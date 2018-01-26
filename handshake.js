@@ -15,7 +15,8 @@ window.onload = function() {
     var logo;
     var arm = {
         move: false,
-        extended: false
+        extended: false,
+        gyro: null
     };
 
     function preload () {
@@ -36,11 +37,13 @@ window.onload = function() {
         game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
 
         game.input.onDown.add(onDown, this);
-        game.input.touch.onTouchStart.add(onDown, this);
+        //game.input.touch.onTouchStart.add(onDown, this);
 
         if (gyro.hasFeature('devicemotion')) {
             gyro.frequency = 100;
             gyro.startTracking(onGyro);
+        } else {
+            console.log('no gyro :(');
         }
     }
 
@@ -54,7 +57,7 @@ window.onload = function() {
     }
 
     function onGyro(o) {
-        debug("x" + o.x + " y" + o.y + " z" + o.z);
+        arm.gyro = o;
     }
 
     function updateCommands() {
@@ -105,6 +108,9 @@ window.onload = function() {
     function render() {
         game.debug.inputInfo(32.0, 32.0);
         game.debug.pointer(game.input.activePointer);
+        if (arm.gyro != null) {
+            debug("x" + arm.gyro.x + " y" + arm.gyro.y + " z" + arm.gyro.z);
+        }
     }
 
     function debug(text) {
