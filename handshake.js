@@ -18,6 +18,7 @@ window.onload = function() {
         move: false,
         extended: false,
         gyro: null,
+        gyroMagnitude: 0.0,
         shake: false
     };
 
@@ -67,7 +68,8 @@ window.onload = function() {
 
     function onGyro(o) {
         arm.gyro = o;
-        arm.gyroMagnitude = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
+        let magnitude = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
+        arm.gyroMagnitude = Math.max(magnitude, arm.gyroMagnitude);
     }
 
     function updateCommands() {
