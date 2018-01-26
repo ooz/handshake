@@ -37,6 +37,11 @@ window.onload = function() {
 
         game.input.onDown.add(onDown, this);
         game.input.touch.onTouchStart.add(onDown, this);
+
+        if (gyro.hasFeature('devicemotion')) {
+            gyro.frequency = 100;
+            gyro.startTracking(onGyro);
+        }
     }
 
     function onDown() {
@@ -46,6 +51,10 @@ window.onload = function() {
         }
 
         updateCommands();
+    }
+
+    function onGyro(o) {
+        debug("x" + o.x + " y" + o.y + " z" + o.z);
     }
 
     function updateCommands() {
@@ -96,6 +105,10 @@ window.onload = function() {
     function render() {
         game.debug.inputInfo(32.0, 32.0);
         game.debug.pointer(game.input.activePointer);
+    }
+
+    function debug(text) {
+        game.debug.text(text, 0.0, HEIGHT - 20.0);
     }
 
 };
