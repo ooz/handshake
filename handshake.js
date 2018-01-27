@@ -12,10 +12,10 @@ window.onload = function() {
     const ARM_IDLE_MIN_ANGLE = ARM_DEFAULT_ANGLE - ARM_IDLE_AMPLITUDE;
     const ARM_IDLE_MAX_ANGLE = ARM_DEFAULT_ANGLE + ARM_IDLE_AMPLITUDE;
     const ARM_SHAKE_AMPLITUDE = 10.0; // in degree
-    const ARM_IDLE_ANCHOR = [0.5, 0.3];
+    const ARM_IDLE_ANCHOR = [0.5, 0.4];
     const ARM_MIN_POS = {
-        x: 1.5 * WIDTH / 2.0,
-        y: 1.5 * HEIGHT / 2.0
+        x: 1.7 * WIDTH / 2.0,
+        y: 1.7 * HEIGHT / 2.0
     };
 
     var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', {
@@ -54,10 +54,10 @@ window.onload = function() {
 
     function preload () {
         //game.load.image('logo', 'phaser.png');
-        game.load.image('businessman', 'assets/businessman-complete.png')
-        game.load.image('businessman-head', 'assets/businessman-head.png');
-        game.load.image('businessman-body', 'assets/businessman-body.png');
-        game.load.image('businessman-arm', 'assets/businessman-arm-lower.png');
+        game.load.image('businessman', 'assets/businessman/businessman-complete.png')
+        game.load.image('businessman-head', 'assets/businessman/head00.png');
+        game.load.image('businessman-body', 'assets/businessman/businessman-body.png');
+        game.load.image('businessman-arm', 'assets/businessman/businessman-arm-lower.png');
         game.load.image('arm', 'assets/hand-perspective/hand.png');
     }
 
