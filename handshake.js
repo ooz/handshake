@@ -30,9 +30,7 @@ window.onload = function() {
         type: 0, // 0 Paper, 1 scissor, 2 stone
         move: false,
         extended: false,
-        gyro: null,
         sprite: null,
-        gyroMagnitude: 0.0,
         shake: false,
         idleUp: true,
         isIdle: function() {
@@ -53,6 +51,23 @@ window.onload = function() {
         ...newArm(ARM_DEFAULT_ANGLE, ARM_SHAKE_AMPLITUDE)
     };
 
+    var people = {
+        primary: {
+            arm: newArm(PEOPLE_ARM_DEFAULT_ANGLE, PEOPLE_ARM_SHAKE_AMPLITUDE),
+            body: {},
+            head: {},
+            group: null,
+            expectations: {},
+        },
+        queue: null
+    };
+
+    var controls = {
+        shake: null,
+        //gyro: null,
+        gyroMagnitude: 0.0,
+    }
+
     function newArm(defaultAngle, angleMagnitude) {
         return {
             defaultAngle: defaultAngle,
@@ -66,31 +81,41 @@ window.onload = function() {
         sprite.anchor.setTo(0.3, 0.5);
         sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
         sprite.scale.setTo(0.2, 0.2);
+        sprite.name = kind;
+
         game.physics.enable(sprite, Phaser.Physics.ARCADE);
 
         return sprite;
     }
 
-    var people = {
-        primary: {
-            arm: newArm(PEOPLE_ARM_DEFAULT_ANGLE, PEOPLE_ARM_SHAKE_AMPLITUDE),
-            body: {},
-            head: {},
-            group: null
-        },
-        queue: null
-    };
+    function newPrimary(kind) {
+        people.primary.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, kind + '-body');
+        people.primary.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
+        people.primary.head.sprite = game.add.sprite(game.world.centerX, game.world.centerY, kind + '-head');
+        people.primary.head.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -108, -33);
+        people.primary.head.sprite.anchor.setTo(0.5, 1.0);
+        people.primary.head.sprite.name = kind;
+        people.primary.arm.sprite = game.add.sprite(0, 0, kind + '-arm');
+        people.primary.arm.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -18, -113);
+        people.primary.arm.sprite.anchor.setTo(0.5, 17.0 / 137.0);
+        people.primary.arm.sprite.angle = PEOPLE_ARM_DEFAULT_ANGLE;
 
-    var movingBusinessMan = {};
+        game.physics.enable(people.primary.arm.sprite, Phaser.Physics.ARCADE);
 
-    var controls = {
-        shake: null
+        people.primary.expectations = {
+            happyTypes: [0],
+            ouchTypes: [1, 2],
+            shakeMagnitude: 100000000 // huge ;)
+        }
+
+        setPrimaryVisible(true);
     }
 
     function preload () {
-
         game.load.image('businessman', 'assets/businessman/businessman-complete.png');
         game.load.image('businessman-head', 'assets/businessman/head05.png');
+        game.load.image('businessman-head-happy', 'assets/businessman/head-happy.png');
+        game.load.image('businessman-head-ouch', 'assets/businessman/head-ouch.png');
         game.load.image('businessman-body', 'assets/businessman/businessman-body.png');
         game.load.image('businessman-arm', 'assets/businessman/businessman-arm-lower.png');
 
@@ -112,27 +137,14 @@ window.onload = function() {
         people.queue.add(newPerson('granny'));
 
         // Primary person
-        people.primary.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-body');
-        people.primary.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
-        people.primary.head.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-head');
-        people.primary.head.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -108, -33);
-        people.primary.head.sprite.anchor.setTo(0.5, 1.0);
+        newPrimary('businessman')
 
         // Arm
         arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
-
+        game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
         resetArm();
 
-        // Primary person arm
-        people.primary.arm.sprite = game.add.sprite(0, 0, 'businessman-arm');
-        people.primary.arm.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -18, -113);
-        people.primary.arm.sprite.anchor.setTo(0.5, 17.0 / 137.0);
-        people.primary.arm.sprite.angle = PEOPLE_ARM_DEFAULT_ANGLE;
-        setPrimaryVisible(true);
-
-        // Physics
-        game.physics.enable(people.primary.arm.sprite, Phaser.Physics.ARCADE);
-        game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
+        people.primary.arm.sprite.bringToTop();
 
         // Input
         game.input.onDown.add(onDown, this);
@@ -140,21 +152,20 @@ window.onload = function() {
         if (gyro.hasFeature('devicemotion')) {
             gyro.frequency = 50; // ms
             gyro.startTracking(onGyro);
-        } else {
-            console.log('no gyro :(');
         }
+
         controls.shake = game.input.keyboard.addKey(Phaser.Keyboard.S);
         game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(swapArm, this);
     }
 
     function render() {
         game.debug.inputInfo(32.0, 32.0);
-        game.debug.pointer(game.input.activePointer);
+        //game.debug.pointer(game.input.activePointer);
         if (arm.gyro != null) {
             debug("gyro " + round(arm.gyroMagnitude));
             //debug("x" + round(arm.gyro.x) + " y" + round(arm.gyro.y) + " z" + round(arm.gyro.z));
         } else {
-            debug("no gyro :(")
+            debug("no gyro :( power: " + controls.gyroMagnitude)
         }
     }
 
@@ -195,7 +206,7 @@ window.onload = function() {
     }
 
     function onGyro(o) {
-        arm.gyro = o;
+        //arm.gyro = o;
         let magnitude = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
         arm.gyroMagnitude = Math.max(magnitude, arm.gyroMagnitude);
     }
@@ -282,8 +293,14 @@ window.onload = function() {
         }
         if (arm.extended && (arm.shake || controls.shake.isDown)) {
             shake(arm, IDLE_SPEED * 10, arm.angleMagnitude);
-            shake(people.primary.arm, IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude,
-                  -1.0);
+
+            console.log("name: " + people.primary.head.sprite.name);
+            if (people.primary.expectations.happyTypes.includes(arm.type)) {
+                shake(people.primary.arm, IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude, -1.0);
+                people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-happy', 0, false);
+            } else if (people.primary.expectations.ouchTypes.includes(arm.type)) {
+                people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-ouch', 0, false);
+            }
         }
     }
 
