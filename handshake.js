@@ -134,8 +134,6 @@ window.onload = function() {
     }
 
     function render() {
-        debug("extended " + arm.extended, 60);
-        debug("moves " + arm.move, 40);
         game.debug.inputInfo(32.0, 32.0);
         game.debug.pointer(game.input.activePointer);
         if (arm.gyro != null) {
@@ -163,6 +161,8 @@ window.onload = function() {
     }
 
     function swapArm() {
+        arm.type += 1;
+        arm.type = arm.type % 3;
         switch(arm.type) {
             case 1:
                 arm.sprite.loadTexture('arm-scissor', 0, false);
@@ -173,8 +173,6 @@ window.onload = function() {
             default:
                 arm.sprite.loadTexture('arm', 0, false);
         }
-        arm.type += 1;
-        arm.type = arm.type % 3;
     }
 
     function onUp() {
