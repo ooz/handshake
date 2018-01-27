@@ -3,7 +3,8 @@ window.onload = function() {
     const WIDTH = 300.0;
     const HEIGHT = 600.0;
     const WIDTH_HEIGHT_RATIO = WIDTH / HEIGHT;
-    const EXTENSION_SPEED = 200.0;
+    const EXTENSION_SPEED = 2000.0;
+    const IDLE_SPEED = 8.0;
 
     const ARM_DEFAULT_ANGLE = -33.0;
     const PEOPLE_ARM_DEFAULT_ANGLE = ARM_DEFAULT_ANGLE - 15;
@@ -47,6 +48,10 @@ window.onload = function() {
 
     var movingBusinessMan = {};
 
+    var controls = {
+        shake: null
+    }
+
     function preload () {
         //game.load.image('logo', 'phaser.png');
         game.load.image('businessman', 'assets/businessman-complete.png')
@@ -83,12 +88,23 @@ window.onload = function() {
         game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
 
         game.input.onDown.add(onDown, this);
-
         if (gyro.hasFeature('devicemotion')) {
             gyro.frequency = 50; // ms
             gyro.startTracking(onGyro);
         } else {
             console.log('no gyro :(');
+        }
+        controls.shake = game.input.keyboard.addKey(Phaser.Keyboard.S);
+    }
+
+    function render() {
+        game.debug.inputInfo(32.0, 32.0);
+        game.debug.pointer(game.input.activePointer);
+        if (arm.gyro != null) {
+            debug("gyro " + round(arm.gyroMagnitude));
+            //debug("x" + round(arm.gyro.x) + " y" + round(arm.gyro.y) + " z" + round(arm.gyro.z));
+        } else {
+            debug("no gyro :(")
         }
     }
 
@@ -166,9 +182,9 @@ window.onload = function() {
 
         if (arm.isIdle()) {
             if (arm.idleUp) {
-                arm.sprite.angle += 0.1;
+                arm.sprite.body.angularVelocity = IDLE_SPEED;
             } else {
-                arm.sprite.angle -= 0.1;
+                arm.sprite.body.angularVelocity = -1.0 * IDLE_SPEED;
             }
             if (arm.sprite.angle > ARM_IDLE_MAX_ANGLE) {
                 arm.sprite.angle = ARM_IDLE_MAX_ANGLE;
@@ -178,14 +194,16 @@ window.onload = function() {
                 arm.sprite.angle = ARM_IDLE_MIN_ANGLE;
                 arm.idleUp = true;
             }
+        } else {
+            arm.sprite.body.angularVelocity = 0;
         }
 
         // Shaking
         if (arm.gyro != null && arm.gyroMagnitude >= 20.0) {
             arm.shake = true;
         }
-        if (arm.extended && arm.shake) {
-            arm.sprite.anchor.setTo(1.0, 1.0);
+        if (arm.extended && (arm.shake || controls.shake.isDown)) {
+            shake(IDLE_SPEED * 10, ARM_IDLE_AMPLITUDE * 10);
         }
     }
 
@@ -196,14 +214,22 @@ window.onload = function() {
         console.log('stop extension');
     }
 
-    function render() {
-        game.debug.inputInfo(32.0, 32.0);
-        game.debug.pointer(game.input.activePointer);
-        if (arm.gyro != null) {
-            debug("gyro " + round(arm.gyroMagnitude));
-            //debug("x" + round(arm.gyro.x) + " y" + round(arm.gyro.y) + " z" + round(arm.gyro.z));
+    function shake(speed=IDLE_SPEED, magnitude=ARM_IDLE_AMPLITUDE) {
+        let minAngle = ARM_DEFAULT_ANGLE - magnitude;
+        let maxAngle = ARM_DEFAULT_ANGLE + magnitude
+
+        if (arm.idleUp) {
+            arm.sprite.body.angularVelocity = speed;
         } else {
-            debug("no gyro :(")
+            arm.sprite.body.angularVelocity = -1.0 * speed;
+        }
+        if (arm.sprite.angle > maxAngle) {
+            arm.sprite.angle = maxAngle;
+            arm.idleUp = false;
+        }
+        if (arm.sprite.angle < minAngle) {
+            arm.sprite.angle = minAngle;
+            arm.idleUp = true;
         }
     }
 
