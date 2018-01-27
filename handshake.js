@@ -119,13 +119,22 @@ window.onload = function() {
         game.load.image('button-stone', 'assets/button/button-hand-stone.png');
 
         game.load.image('businessman', 'assets/businessman/businessman-complete.png');
-        game.load.image('businessman-head', 'assets/businessman/head05.png');
+        game.load.image('businessman-head', 'assets/businessman/head.png');
+        game.load.image('businessman-head-idle', 'assets/businessman/head-idle.png');
         game.load.image('businessman-head-happy', 'assets/businessman/head-happy.png');
         game.load.image('businessman-head-ouch', 'assets/businessman/head-ouch.png');
         game.load.image('businessman-body', 'assets/businessman/businessman-body.png');
         game.load.image('businessman-arm', 'assets/businessman/businessman-arm-lower.png');
 
         game.load.image('granny', 'assets/granny/granny-complete.png');
+
+        game.load.image('punk', 'assets/punk/punk-complete.png');
+        game.load.image('punk-head', 'assets/punk/head.png');
+        game.load.image('punk-head-idle', 'assets/punk/head-idle.png');
+        game.load.image('punk-head-happy', 'assets/punk/head-happy.png');
+        game.load.image('punk-head-ouch', 'assets/punk/head-ouch.png');
+        game.load.image('punk-body', 'assets/punk/punk-body.png');
+        game.load.image('punk-arm', 'assets/punk/punk-arm-lower.png');
 
         game.load.image('arm', 'assets/hand/hand-paper.png');
         game.load.image('arm-scissor', 'assets/hand/hand-scissor.png');
@@ -158,13 +167,14 @@ window.onload = function() {
 
         // Input
         arm.sprite.inputEnabled = true;
-        arm.sprite.events.onInputDown.add(onHandDown, this);
+        arm.sprite.events.onInputDown.add(onDownArm, this);
         game.input.onDown.add(onDown, this);
         if (gyro.hasFeature('devicemotion')) {
             gyro.frequency = 50; // ms
             gyro.startTracking(onGyro);
         }
 
+        game.input.keyboard.addKey(Phaser.Keyboard.W).onDown.add(onDownArm, this);
         controls.shake = game.input.keyboard.addKey(Phaser.Keyboard.S);
         game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(swapArm, this);
     }
@@ -188,7 +198,7 @@ window.onload = function() {
         }
     }
 
-    function onHandDown() {
+    function onDownArm() {
         // Arm movement state
         arm.move = true;
         if (arm.extended) {
@@ -215,6 +225,8 @@ window.onload = function() {
                     arm.sprite.loadTexture('arm', 0, false);
                     controls.nextHandButton.loadTexture('button-scissors', 0, false);
             }
+        } else {
+            onDownArm();
         }
     }
 
@@ -312,15 +324,18 @@ window.onload = function() {
         if (arm.gyro != null && arm.gyroMagnitude >= 20.0) {
             arm.shake = true;
         }
-        if (arm.extended && (arm.shake || controls.shake.isDown)) {
-            shake(arm, IDLE_SPEED * 10, arm.angleMagnitude);
-
-            console.log("name: " + people.primary.head.sprite.name);
-            if (people.primary.expectations.happyTypes.includes(arm.type)) {
-                shake(people.primary.arm, IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude, -1.0);
-                people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-happy', 0, false);
-            } else if (people.primary.expectations.ouchTypes.includes(arm.type)) {
+        if (arm.extended) {
+            if (people.primary.expectations.ouchTypes.includes(arm.type)) {
                 people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-ouch', 0, false);
+                retreat(people.primary.arm)
+            } else if (arm.shake || controls.shake.isDown) {
+                shake(arm, IDLE_SPEED * 10, arm.angleMagnitude);
+
+                console.log("name: " + people.primary.head.sprite.name);
+                if (people.primary.expectations.happyTypes.includes(arm.type)) {
+                    shake(people.primary.arm, IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude, -1.0);
+                    people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-happy', 0, false);
+                }
             }
         }
     }
@@ -360,6 +375,16 @@ window.onload = function() {
         if (armToShake.sprite.angle < minAngle) {
             armToShake.sprite.angle = minAngle;
             arm.idleUp = true;
+        }
+    }
+
+    function retreat(armToRetreat,
+                     speed=IDLE_SPEED * 50 + 5,
+                     direction=1.0,
+                     stopAngle=-100) {
+        armToRetreat.sprite.body.angularVelocity = -1.0 * speed * direction;
+        if (armToRetreat.sprite.angle < stopAngle) {
+            armToRetreat.sprite.angle = stopAngle;
         }
     }
 
