@@ -68,10 +68,11 @@ window.onload = function() {
             arm: newArm(PEOPLE_ARM_DEFAULT_ANGLE, PEOPLE_ARM_SHAKE_AMPLITUDE),
             body: {},
             head: {},
-            group: null,
+            sprite: null,
             expectation: {},
         },
-        queue: null
+        queue: null,
+        fadeoutQueue: null
     };
 
     var controls = {
@@ -97,6 +98,20 @@ window.onload = function() {
         sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
         sprite.scale.setTo(0.2, 0.2);
         sprite.name = kind;
+        sprite.data.exitStrategy = randomItem([-1, 1]);
+
+        game.physics.enable(sprite, Phaser.Physics.ARCADE);
+
+        return sprite;
+    }
+    function newExitPerson(kind) {
+        var sprite = game.add.sprite(game.world.centerX, game.world.centerY, kind);
+
+        sprite.anchor.setTo(0.5, 0.5);
+        //sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
+        //sprite.scale.setTo(0.2, 0.2);
+        sprite.name = kind;
+        sprite.data.exitStrategy = randomItem([-1, 1]);
 
         game.physics.enable(sprite, Phaser.Physics.ARCADE);
 
@@ -104,6 +119,10 @@ window.onload = function() {
     }
 
     function newPrimary(kind) {
+        people.primary.sprite = game.add.sprite(game.world.centerX, game.world.centerY, kind);
+        people.primary.sprite.anchor.setTo(0.5, 0.5);
+        people.primary.sprite.visibile = false;
+        people.primary.sprite.name = kind;
         people.primary.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, kind + '-body');
         people.primary.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
         people.primary.head.sprite = game.add.sprite(game.world.centerX, game.world.centerY, kind + '-head');
@@ -115,6 +134,7 @@ window.onload = function() {
         people.primary.arm.sprite.anchor.setTo(0.5, 17.0 / 137.0);
         people.primary.arm.sprite.angle = PEOPLE_ARM_DEFAULT_ANGLE;
 
+        game.physics.enable(people.primary.sprite, Phaser.Physics.ARCADE);
         game.physics.enable(people.primary.arm.sprite, Phaser.Physics.ARCADE);
 
         if (kind === 'businessman') {
@@ -179,12 +199,13 @@ window.onload = function() {
         // Maintain aspect ratio
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
-        // BG people
+        // Background and fadeout people
         people.queue = game.add.group();
         people.queue.add(newPerson('punk'));
+        people.fadeoutQueue = game.add.group();
 
         // Primary person
-        newPrimary('businessman')
+        newPrimary('businessman');
 
         // Arm
         arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
@@ -214,6 +235,7 @@ window.onload = function() {
 
     function render() {
         //game.debug.inputInfo(32.0, 32.0);
+        debug("fdOQ " + people.fadeoutQueue.length, 3);
         debug("powr " + round(arm.power), 2);
         debug("gyro " + round(arm.gyroMagnitude));
     }
@@ -293,6 +315,7 @@ window.onload = function() {
 
     function updateQueuedPeople() {
         people.queue.forEach(updateBackgroundPerson, this);
+        people.fadeoutQueue.forEach(updateFadeoutPerson, this);
     }
     function updateBackgroundPerson(sprite) {
         if (sprite.x < game.world.centerX) {
@@ -315,13 +338,21 @@ window.onload = function() {
 
         sprite.scale.setTo(distanceRatio, distanceRatio);
     }
+    function updateFadeoutPerson(sprite) {
+        console.log("updating fadeout " + sprite.name + " " + sprite.data.exitStrategy);
+        sprite.visibility = true;
+        sprite.body.velocity.x = sprite.data.exitStrategy * 150;
+    }
 
     function handover(sprite) {
+        oldPrimaryType = people.primary.sprite.name;
         newPrimaryType = sprite.name;
 
         sprite.destroy();
         destroyPrimary();
         newPrimary(newPrimaryType);
+
+        people.fadeoutQueue.add(newExitPerson(oldPrimaryType));
 
         arm.sprite.bringToTop();
         people.primary.arm.sprite.bringToTop();
@@ -447,6 +478,13 @@ window.onload = function() {
 
     function round(value) {
         return Math.round(value * 100) / 100;
+    }
+
+    function random(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function randomItem(items) {
+        return items[Math.floor(Math.random() * items.length)];
     }
 
     function translateAnchor(sprite) {
