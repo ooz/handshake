@@ -27,6 +27,7 @@ window.onload = function() {
     });
 
     var arm = {
+        power: 0.0,
         type: 0, // 0 Paper, 1 scissor, 2 stone
         move: false,
         extended: false,
@@ -49,6 +50,15 @@ window.onload = function() {
         isTooCollapsed: function() {
             return this.sprite.x > WIDTH || this.sprite.y > HEIGHT;
         },
+        isPaperExtended: function() {
+            return this.extended && this.type == 0;
+        },
+        isScissorsExtended: function() {
+            return this.extended && this.type == 1;
+        },
+        isStoneExtended: function() {
+            return this.extended && this.type == 2;
+        },
         ...newArm(ARM_DEFAULT_ANGLE, ARM_SHAKE_AMPLITUDE)
     };
 
@@ -58,7 +68,7 @@ window.onload = function() {
             body: {},
             head: {},
             group: null,
-            expectations: {},
+            expectation: {},
         },
         queue: null
     };
@@ -102,13 +112,24 @@ window.onload = function() {
 
         game.physics.enable(people.primary.arm.sprite, Phaser.Physics.ARCADE);
 
-        people.primary.expectations = {
-            happyTypes: [0],
-            ouchTypes: [1, 2],
-            shakeMagnitude: 100000000 // huge ;)
+        if (kind === 'businessman') {
+            people.primary.expectation = newExpectation([0], [1, 2], 5000);
+        } else if (kind === 'granny') {
+            people.primary.expectation = newExpectation([1], [0, 2], 5000);
         }
 
         setPrimaryVisible(true);
+    }
+
+    function newExpectation(happys, ouchs, stamina, power=10, shakables=[0], multiplier=1) {
+        return {
+            happyTypes: happys,
+            ouchTypes: ouchs,
+            stamina: stamina,
+            powerGain: power,
+            shakables: shakables,
+            multiplier: multiplier
+        };
     }
 
     function preload () {
@@ -180,7 +201,8 @@ window.onload = function() {
     }
 
     function render() {
-        game.debug.inputInfo(32.0, 32.0);
+        //game.debug.inputInfo(32.0, 32.0);
+        debug("powr " + round(arm.power), 2);
         debug("gyro " + round(arm.gyroMagnitude));
     }
 
@@ -314,18 +336,18 @@ window.onload = function() {
         }
 
         // Shaking
-        if (arm.gyro != null && arm.gyroMagnitude >= 20.0) {
+        if (arm.gyroMagnitude >= 20.0) {
             arm.shake = true;
         }
         if (arm.extended) {
-            if (people.primary.expectations.ouchTypes.includes(arm.type)) {
+            if (people.primary.expectation.ouchTypes.includes(arm.type)) {
                 people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-ouch', 0, false);
                 retreat(people.primary.arm)
             } else if (arm.shake || controls.shake.isDown) {
                 shake(arm, IDLE_SPEED * 10, arm.angleMagnitude);
 
                 console.log("name: " + people.primary.head.sprite.name);
-                if (people.primary.expectations.happyTypes.includes(arm.type)) {
+                if (people.primary.expectation.happyTypes.includes(arm.type)) {
                     shake(people.primary.arm, IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude, -1.0);
                     people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-happy', 0, false);
                 }
@@ -381,8 +403,8 @@ window.onload = function() {
         }
     }
 
-    function debug(text, offset=20.0) {
-        game.debug.text(text, 100.0, HEIGHT - offset);
+    function debug(text, line=1.0) {
+        game.debug.text(text, 100.0, HEIGHT - line * 20.0);
     }
 
     function round(value) {
