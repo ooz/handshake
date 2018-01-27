@@ -60,6 +60,17 @@ window.onload = function() {
         };
     }
 
+    function newPerson(kind) {
+        var sprite = game.add.sprite(0, 0, kind);
+
+        sprite.anchor.setTo(0.3, 0.5);
+        sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
+        sprite.scale.setTo(0.2, 0.2);
+        game.physics.enable(sprite, Phaser.Physics.ARCADE);
+
+        return sprite;
+    }
+
     var people = {
         primary: {
             arm: newArm(PEOPLE_ARM_DEFAULT_ANGLE, PEOPLE_ARM_SHAKE_AMPLITUDE),
@@ -67,7 +78,7 @@ window.onload = function() {
             head: {},
             group: null
         },
-        queue: []
+        queue: null
     };
 
     var movingBusinessMan = {};
@@ -77,10 +88,14 @@ window.onload = function() {
     }
 
     function preload () {
-        game.load.image('businessman', 'assets/businessman/businessman-complete.png')
+
+        game.load.image('businessman', 'assets/businessman/businessman-complete.png');
         game.load.image('businessman-head', 'assets/businessman/head05.png');
         game.load.image('businessman-body', 'assets/businessman/businessman-body.png');
         game.load.image('businessman-arm', 'assets/businessman/businessman-arm-lower.png');
+
+        game.load.image('granny', 'assets/granny/granny-complete.png');
+
         game.load.image('arm', 'assets/hand/hand-paper.png');
         game.load.image('arm-scissor', 'assets/hand/hand-scissor.png');
         game.load.image('arm-stone', 'assets/hand/hand-stone.png');
@@ -93,13 +108,10 @@ window.onload = function() {
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
         // BG people
-        movingBusinessMan.sprite = game.add.sprite(0, 0, 'businessman');
-        movingBusinessMan.sprite.anchor.setTo(0.3, 0.5);
-        movingBusinessMan.sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
-        movingBusinessMan.sprite.scale.setTo(0.2, 0.2);
+        people.queue = game.add.group();
+        people.queue.add(newPerson('granny'));
 
         // Primary person
-        //people.primary.group = game.add.group();
         people.primary.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-body');
         people.primary.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
         people.primary.head.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-head');
@@ -119,7 +131,6 @@ window.onload = function() {
         setPrimaryVisible(true);
 
         // Physics
-        game.physics.enable(movingBusinessMan.sprite, Phaser.Physics.ARCADE);
         game.physics.enable(people.primary.arm.sprite, Phaser.Physics.ARCADE);
         game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
 
@@ -196,28 +207,31 @@ window.onload = function() {
     }
 
     function update() {
-        updateMovingBusinessMan();
+        updateQueuedPeople();
         updateArm();
     }
 
-    function updateMovingBusinessMan() {
-        if (movingBusinessMan.sprite.x < game.world.centerX) {
-            movingBusinessMan.sprite.body.velocity.x = 100;
+    function updateQueuedPeople() {
+        people.queue.forEach(updateBackgroundPerson, this);
+    }
+    function updateBackgroundPerson(sprite) {
+        if (sprite.x < game.world.centerX) {
+            sprite.body.velocity.x = 100;
         } else {
-            movingBusinessMan.sprite.body.velocity.x = 0;
+            sprite.body.velocity.x = 0;
         }
-        movingBusinessMan.sprite.body.velocity.y = 100;
+        sprite.body.velocity.y = 100;
 
-        let y = movingBusinessMan.sprite.y;
+        let y = sprite.y;
         let targetY = game.world.centerY;
 
         let distanceRatio = y / targetY;
 
         if (distanceRatio >= 1.0) {
-            movingBusinessMan.sprite.body.velocity.y = 0;
+            sprite.body.velocity.y = 0;
         }
 
-        movingBusinessMan.sprite.scale.setTo(distanceRatio, distanceRatio);
+        sprite.scale.setTo(distanceRatio, distanceRatio);
     }
 
     function resetArm() {
