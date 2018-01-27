@@ -182,12 +182,8 @@ window.onload = function() {
     function render() {
         game.debug.inputInfo(32.0, 32.0);
         //game.debug.pointer(game.input.activePointer);
-        if (arm.gyro != null) {
-            debug("gyro " + round(arm.gyroMagnitude));
-            //debug("x" + round(arm.gyro.x) + " y" + round(arm.gyro.y) + " z" + round(arm.gyro.z));
-        } else {
-            debug("no gyro :( power: " + controls.gyroMagnitude)
-        }
+        debug("gyro " + round(arm.gyroMagnitude));
+        //debug("x" + round(arm.gyro.x) + " y" + round(arm.gyro.y) + " z" + round(arm.gyro.z));
     }
 
     function onDown() {
