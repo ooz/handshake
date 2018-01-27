@@ -89,7 +89,7 @@ window.onload = function() {
     function newPerson(kind) {
         var sprite = game.add.sprite(0, 120, kind);
 
-        sprite.anchor.setTo(0.3, 0.5);
+        sprite.anchor.setTo(0.5, 0.5);
         sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
         sprite.scale.setTo(0.2, 0.2);
         sprite.name = kind;
@@ -115,11 +115,16 @@ window.onload = function() {
 
         if (kind === 'businessman') {
             people.primary.expectation = newExpectation([0], [1, 2], 5000);
-        } else if (kind === 'granny') {
+        } else if (kind === 'punk') {
             people.primary.expectation = newExpectation([1], [0, 2], 5000);
         }
 
         setPrimaryVisible(true);
+    }
+    function destroyPrimary() {
+        people.primary.body.sprite.destroy();
+        people.primary.head.sprite.destroy();
+        people.primary.arm.sprite.destroy();
     }
 
     function newExpectation(happys, ouchs, stamina, power=10, shakables=[0], multiplier=1) {
@@ -172,7 +177,7 @@ window.onload = function() {
 
         // BG people
         people.queue = game.add.group();
-        people.queue.add(newPerson('granny'));
+        people.queue.add(newPerson('punk'));
 
         // Primary person
         newPrimary('businessman')
@@ -289,6 +294,8 @@ window.onload = function() {
             sprite.body.velocity.x = 100;
         } else {
             sprite.body.velocity.x = 0;
+            handover(sprite);
+            return;
         }
         sprite.body.velocity.y = 100;
 
@@ -302,6 +309,17 @@ window.onload = function() {
         }
 
         sprite.scale.setTo(distanceRatio, distanceRatio);
+    }
+
+    function handover(sprite) {
+        newPrimaryType = sprite.name;
+
+        sprite.destroy();
+        destroyPrimary();
+        newPrimary(newPrimaryType);
+
+        arm.sprite.bringToTop();
+        people.primary.arm.sprite.bringToTop();
     }
 
     function resetArm() {
