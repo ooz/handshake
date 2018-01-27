@@ -102,8 +102,8 @@ window.onload = function() {
         people.businessman.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-body');
         people.businessman.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
         people.businessman.head.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-head');
-        people.businessman.head.sprite.alignIn(people.businessman.body.sprite, Phaser.TOP_LEFT, 0, 0);
-        //people.businessman.head.sprite.anchor.setTo(0.5, 0.5);
+        people.businessman.head.sprite.alignIn(people.businessman.body.sprite, Phaser.TOP_LEFT, -108, -33);
+        people.businessman.head.sprite.anchor.setTo(0.5, 1.0);
 
         // Arm
         arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
