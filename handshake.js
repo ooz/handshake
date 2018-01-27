@@ -3,7 +3,7 @@ window.onload = function() {
     const WIDTH = 300.0;
     const HEIGHT = 600.0;
     const WIDTH_HEIGHT_RATIO = WIDTH / HEIGHT;
-    const EXTENSION_SPEED = 2000.0;
+    const EXTENSION_SPEED = 200.0;
 
     const ARM_DEFAULT_ANGLE = -33.0;
     const PEOPLE_ARM_DEFAULT_ANGLE = ARM_DEFAULT_ANGLE - 15;
@@ -12,6 +12,10 @@ window.onload = function() {
     const ARM_IDLE_MAX_ANGLE = ARM_DEFAULT_ANGLE + ARM_IDLE_AMPLITUDE;
     const ARM_SHAKE_AMPLITUDE = 10.0; // in degree
     const ARM_IDLE_ANCHOR = [0.5, 0.3];
+    const ARM_MIN_POS = {
+        x: 1.5 * WIDTH / 2.0,
+        y: 1.5 * HEIGHT / 2.0
+    };
 
     var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', {
         preload: preload,
@@ -27,7 +31,9 @@ window.onload = function() {
         gyroMagnitude: 0.0,
         shake: false,
         idleUp: true,
-        isIdle: () => { return !this.move }
+        isIdle: function() {
+            return !this.move && !this.extended
+        }
     };
 
     var people = {
@@ -77,7 +83,6 @@ window.onload = function() {
         game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
 
         game.input.onDown.add(onDown, this);
-        //game.input.touch.onTouchStart.add(onDown, this);
 
         if (gyro.hasFeature('devicemotion')) {
             gyro.frequency = 50; // ms
@@ -143,31 +148,23 @@ window.onload = function() {
         }
 
         // Extension limit checks
-        if ((arm.sprite.x < 1.5 * WIDTH / 2.0)
-            || (arm.sprite.y < 1.5 * HEIGHT / 2.0)) {
+        if (arm.sprite.x < ARM_MIN_POS.x
+            || arm.sprite.y < ARM_MIN_POS.y) {
             arm.extended = true;
-            arm.sprite.x = 1.5 * WIDTH / 2.0;
-            arm.sprite.y = 1.5 * HEIGHT / 2.0;
+            arm.sprite.x = ARM_MIN_POS.x;
+            arm.sprite.y = ARM_MIN_POS.y;
             stopArmExtension();
-        } else if (arm.sprite.x > WIDTH || arm.sprite.y > HEIGHT) {
+        } else if (arm.sprite.x > WIDTH
+                   || arm.sprite.y > HEIGHT) {
             arm.extended = false;
             arm.sprite.x = WIDTH;
             arm.sprite.y = HEIGHT;
             stopArmExtension();
         }
 
-        // Shaking
-        if (arm.gyro != null && arm.gyroMagnitude >= 20.0) {
-            arm.shake = true;
-        }
+
 
         if (arm.isIdle()) {
-            if (arm.extended) {
-                arm.sprite.anchor.setTo(0.5, 1.0);
-            } else {
-                arm.sprite.anchor.setTo(...ARM_IDLE_ANCHOR);
-            }
-
             if (arm.idleUp) {
                 arm.sprite.angle += 0.1;
             } else {
@@ -181,14 +178,14 @@ window.onload = function() {
                 arm.sprite.angle = ARM_IDLE_MIN_ANGLE;
                 arm.idleUp = true;
             }
-
-            arm.sprite.anchor.setTo(...ARM_IDLE_ANCHOR);
-        } else {
-            arm.sprite.anchor.setTo(...ARM_IDLE_ANCHOR);
         }
 
-        if (arm.shake) {
-
+        // Shaking
+        if (arm.gyro != null && arm.gyroMagnitude >= 20.0) {
+            arm.shake = true;
+        }
+        if (arm.extended && arm.shake) {
+            arm.sprite.anchor.setTo(1.0, 1.0);
         }
     }
 
@@ -218,8 +215,17 @@ window.onload = function() {
         return Math.round(value * 100) / 100;
     }
 
-    function translateAnchor(sprite, anchorX, anchorY) {
-        let  = sprite.anchor.x;
+    function translateAnchor(sprite) {
+        let moveX = WIDTH - sprite.x;
+        let moveY = HEIGHT - sprite.y;
+
+        let offsetRatioX = moveX / arm.sprite.width;
+        let offsetRatioY = moveY / arm.sprite.height;
+        console.log("ox" + offsetRatioX + " oy" + offsetRatioY);
+
+        sprite.position.setTo(sprite.x + moveX, sprite.y + moveY);
+        sprite.anchor.setTo(ARM_IDLE_ANCHOR[0] + offsetRatioX,
+                            ARM_IDLE_ANCHOR[1] + offsetRatioY);
     }
 
 };
