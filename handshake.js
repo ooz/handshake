@@ -33,6 +33,7 @@ window.onload = function() {
         sprite: null,
         shake: false,
         idleUp: true,
+        gyroMagnitude: 0.0,
         isIdle: function() {
             return !this.extended && !this.move;
         },
@@ -64,7 +65,6 @@ window.onload = function() {
 
     var controls = {
         shake: null,
-        gyroMagnitude: 0.0,
         nextHandButton: null
     }
 
@@ -181,9 +181,7 @@ window.onload = function() {
 
     function render() {
         game.debug.inputInfo(32.0, 32.0);
-        //game.debug.pointer(game.input.activePointer);
         debug("gyro " + round(arm.gyroMagnitude));
-        //debug("x" + round(arm.gyro.x) + " y" + round(arm.gyro.y) + " z" + round(arm.gyro.z));
     }
 
     function onDown() {
@@ -227,7 +225,6 @@ window.onload = function() {
     }
 
     function onGyro(o) {
-        //arm.gyro = o;
         let magnitude = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
         arm.gyroMagnitude = Math.max(magnitude, arm.gyroMagnitude);
     }
