@@ -50,6 +50,7 @@ window.onload = function() {
         isTooCollapsed: function() {
             return this.sprite.x > WIDTH || this.sprite.y > HEIGHT;
         },
+
         isPaperExtended: function() {
             return this.extended && this.type == 0;
         },
@@ -188,15 +189,16 @@ window.onload = function() {
 
         // Input
         arm.sprite.inputEnabled = true;
-        arm.sprite.events.onInputDown.add(onDownArm, this);
+        arm.sprite.events.onInputDown.add(onArmMove, this);
         game.input.onDown.add(onDown, this);
         if (gyro.hasFeature('devicemotion')) {
             gyro.frequency = 50; // ms
             gyro.startTracking(onGyro);
         }
 
-        game.input.keyboard.addKey(Phaser.Keyboard.W).onDown.add(onDownArm, this);
+        game.input.keyboard.addKey(Phaser.Keyboard.W).onDown.add(onArmMove, this);
         controls.shake = game.input.keyboard.addKey(Phaser.Keyboard.S);
+        controls.shake.onDown.add(onShake, this);
         game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(swapArm, this);
     }
 
@@ -214,7 +216,7 @@ window.onload = function() {
         }
     }
 
-    function onDownArm() {
+    function onArmMove() {
         // Arm movement state
         arm.move = true;
         if (arm.extended) {
@@ -222,6 +224,15 @@ window.onload = function() {
         } else {
             console.log("extending");
         }
+    }
+
+    function onShake() {
+        if (!arm.extended) {
+            onArmMove();
+            return;
+        }
+
+        arm.shake = true;
     }
 
     function swapArm() {
@@ -242,7 +253,7 @@ window.onload = function() {
                     controls.nextHandButton.loadTexture('button-scissors', 0, false);
             }
         } else {
-            onDownArm();
+            onArmMove();
         }
     }
 
@@ -357,7 +368,7 @@ window.onload = function() {
 
     function stopArmMovement() {
         if (arm.move) {
-            stopShaking();
+            stopPrimaryShaking();
             arm.sprite.body.velocity.setTo(0.0, 0.0);
             arm.sprite.angle = ARM_DEFAULT_ANGLE;
             arm.move = false;
@@ -367,8 +378,12 @@ window.onload = function() {
 
     function stopShaking() {
         arm.sprite.body.angularVelocity = 0.0;
-        people.primary.arm.sprite.body.angularVelocity = 0.0;
         arm.shake = false;
+        stopPrimaryShaking();
+    }
+
+    function stopPrimaryShaking() {
+        people.primary.arm.sprite.body.angularVelocity = 0.0;
     }
 
     function shake(armToShake=arm,
