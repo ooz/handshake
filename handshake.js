@@ -76,7 +76,11 @@ window.onload = function() {
 
     var controls = {
         shake: null,
-        nextHandButton: null
+        nextHandButton: null,
+        mouse: null,
+        pressesShake: function() {
+            return this.shake.isDown || this.mouse.isDown;
+        }
     }
 
     function newArm(defaultAngle, angleMagnitude) {
@@ -204,6 +208,7 @@ window.onload = function() {
         game.input.keyboard.addKey(Phaser.Keyboard.W).onDown.add(onArmMove, this);
         controls.shake = game.input.keyboard.addKey(Phaser.Keyboard.S);
         controls.shake.onDown.add(onShake, this);
+        controls.mouse = game.input.activePointer;
         game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(swapArm, this);
     }
 
@@ -372,7 +377,7 @@ window.onload = function() {
             if (people.primary.expectation.ouchTypes.includes(arm.type)) {
                 people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-ouch', 0, false);
                 retreat(people.primary.arm)
-            } else if (arm.shake || controls.shake.isDown) {
+            } else if (arm.shake || controls.pressesShake()) {
                 shake(arm, IDLE_SPEED * 10, arm.angleMagnitude);
 
                 console.log("name: " + people.primary.head.sprite.name);
