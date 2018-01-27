@@ -53,7 +53,6 @@ window.onload = function() {
     }
 
     function preload () {
-        //game.load.image('logo', 'phaser.png');
         game.load.image('businessman', 'assets/businessman/businessman-complete.png')
         game.load.image('businessman-head', 'assets/businessman/head00.png');
         game.load.image('businessman-body', 'assets/businessman/businessman-body.png');
@@ -67,26 +66,33 @@ window.onload = function() {
         // Maintain aspect ratio
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
+        // BG people
         movingBusinessMan.sprite = game.add.sprite(game.world.centerX, 0, 'businessman');
         movingBusinessMan.sprite.anchor.setTo(0.5, 0.5);
         movingBusinessMan.sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
         movingBusinessMan.sprite.scale.setTo(0.2, 0.2);
 
+        // Primary person
         people.businessman.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-body');
         people.businessman.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
 
+        // Arm
         arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
         arm.sprite.anchor.setTo(...ARM_IDLE_ANCHOR);
         arm.sprite.angle = ARM_DEFAULT_ANGLE;
 
+        // Primary person arm
         people.businessman.arm.sprite = game.add.sprite(0, 0, 'businessman-arm');
         people.businessman.arm.sprite.alignIn(people.businessman.body.sprite, Phaser.TOP_LEFT, -18, -113);
         people.businessman.arm.sprite.anchor.setTo(0.5, 17.0 / 137.0);
         people.businessman.arm.sprite.angle = PEOPLE_ARM_DEFAULT_ANGLE;
 
+        // Physics
         game.physics.enable(movingBusinessMan.sprite, Phaser.Physics.ARCADE);
+        game.physics.enable(people.businessman.arm.sprite, Phaser.Physics.ARCADE);
         game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
 
+        // Input
         game.input.onDown.add(onDown, this);
         if (gyro.hasFeature('devicemotion')) {
             gyro.frequency = 50; // ms
@@ -178,24 +184,10 @@ window.onload = function() {
             stopArmExtension();
         }
 
-
-
         if (arm.isIdle()) {
-            if (arm.idleUp) {
-                arm.sprite.body.angularVelocity = IDLE_SPEED;
-            } else {
-                arm.sprite.body.angularVelocity = -1.0 * IDLE_SPEED;
-            }
-            if (arm.sprite.angle > ARM_IDLE_MAX_ANGLE) {
-                arm.sprite.angle = ARM_IDLE_MAX_ANGLE;
-                arm.idleUp = false;
-            }
-            if (arm.sprite.angle < ARM_IDLE_MIN_ANGLE) {
-                arm.sprite.angle = ARM_IDLE_MIN_ANGLE;
-                arm.idleUp = true;
-            }
+            shake();
         } else {
-            arm.sprite.body.angularVelocity = 0;
+            stopShaking();
         }
 
         // Shaking
@@ -214,7 +206,13 @@ window.onload = function() {
         console.log('stop extension');
     }
 
+    function stopShaking() {
+        arm.sprite.body.angularVelocity = 0;
+        people.businessman.arm.sprite.body.angularVelocity = 0;
+    }
+
     function shake(speed=IDLE_SPEED, magnitude=ARM_IDLE_AMPLITUDE) {
+        // arm
         let minAngle = ARM_DEFAULT_ANGLE - magnitude;
         let maxAngle = ARM_DEFAULT_ANGLE + magnitude
 
@@ -231,6 +229,8 @@ window.onload = function() {
             arm.sprite.angle = minAngle;
             arm.idleUp = true;
         }
+
+        // business man
     }
 
     function debug(text, offset=20.0) {
