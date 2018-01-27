@@ -102,7 +102,8 @@ window.onload = function() {
         people.businessman.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-body');
         people.businessman.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
         people.businessman.head.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-head');
-        people.businessman.head.sprite.anchor.setTo(0.5, 0.5);
+        people.businessman.head.sprite.alignIn(people.businessman.body.sprite, Phaser.TOP_LEFT, 0, 0);
+        //people.businessman.head.sprite.anchor.setTo(0.5, 0.5);
 
         // Arm
         arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
@@ -161,17 +162,19 @@ window.onload = function() {
     }
 
     function swapArm() {
-        arm.type += 1;
-        arm.type = arm.type % 3;
-        switch(arm.type) {
-            case 1:
-                arm.sprite.loadTexture('arm-scissor', 0, false);
-                break;
-            case 2:
-                arm.sprite.loadTexture('arm-stone', 0, false);
-                break;
-            default:
-                arm.sprite.loadTexture('arm', 0, false);
+        if (!arm.extended) {
+            arm.type += 1;
+            arm.type = arm.type % 3;
+            switch(arm.type) {
+                case 1:
+                    arm.sprite.loadTexture('arm-scissor', 0, false);
+                    break;
+                case 2:
+                    arm.sprite.loadTexture('arm-stone', 0, false);
+                    break;
+                default:
+                    arm.sprite.loadTexture('arm', 0, false);
+            }
         }
     }
 
