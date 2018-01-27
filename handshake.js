@@ -27,14 +27,28 @@ window.onload = function() {
     });
 
     var arm = {
+        type: 0, // 0 Paper, 1 scissor, 2 stone
         move: false,
         extended: false,
         gyro: null,
+        sprite: null,
         gyroMagnitude: 0.0,
         shake: false,
         idleUp: true,
         isIdle: function() {
-            return !this.move && !this.extended
+            return !this.extended && !this.move;
+        },
+        hasToExpand: function() {
+            return !this.extended && this.move;
+        },
+        hasToCollapse: function() {
+            return this.extended && this.move;
+        },
+        isTooExtended: function() {
+            return this.sprite.x < ARM_MIN_POS.x || this.sprite.y < ARM_MIN_POS.y;
+        },
+        isTooCollapsed: function() {
+            return this.sprite.x > WIDTH || this.sprite.y > HEIGHT;
         },
         ...newArm(ARM_DEFAULT_ANGLE, ARM_SHAKE_AMPLITUDE)
     };
@@ -58,6 +72,7 @@ window.onload = function() {
     var movingBusinessMan = {};
 
     var controls = {
+        leftDown: false,
         shake: null
     }
 
@@ -66,29 +81,33 @@ window.onload = function() {
         game.load.image('businessman-head', 'assets/businessman/head00.png');
         game.load.image('businessman-body', 'assets/businessman/businessman-body.png');
         game.load.image('businessman-arm', 'assets/businessman/businessman-arm-lower.png');
-        game.load.image('arm', 'assets/hand-perspective/hand.png');
+        game.load.image('arm', 'assets/hand/hand-paper.png');
+        game.load.image('arm-scissor', 'assets/hand/hand-scissor.png');
+        game.load.image('arm-stone', 'assets/hand/hand-stone.png');
     }
 
     function create () {
-        game.stage.backgroundColor = '#fafa00';
+        game.stage.backgroundColor = '#aaaa00';
 
         // Maintain aspect ratio
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
         // BG people
-        movingBusinessMan.sprite = game.add.sprite(game.world.centerX, 0, 'businessman');
-        movingBusinessMan.sprite.anchor.setTo(0.5, 0.5);
+        movingBusinessMan.sprite = game.add.sprite(0, 0, 'businessman');
+        movingBusinessMan.sprite.anchor.setTo(0.3, 0.5);
         movingBusinessMan.sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
         movingBusinessMan.sprite.scale.setTo(0.2, 0.2);
 
         // Primary person
         people.businessman.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-body');
         people.businessman.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
+        people.businessman.head.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-head');
+        people.businessman.head.sprite.anchor.setTo(0.5, 0.5);
 
         // Arm
         arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
-        arm.sprite.anchor.setTo(...ARM_IDLE_ANCHOR);
-        arm.sprite.angle = ARM_DEFAULT_ANGLE;
+
+        resetArm();
 
         // Primary person arm
         people.businessman.arm.sprite = game.add.sprite(0, 0, 'businessman-arm');
@@ -103,6 +122,7 @@ window.onload = function() {
 
         // Input
         game.input.onDown.add(onDown, this);
+        game.input.onUp.add(onUp, this);
         if (gyro.hasFeature('devicemotion')) {
             gyro.frequency = 50; // ms
             gyro.startTracking(onGyro);
@@ -110,9 +130,12 @@ window.onload = function() {
             console.log('no gyro :(');
         }
         controls.shake = game.input.keyboard.addKey(Phaser.Keyboard.S);
+        game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(swapArm, this);
     }
 
     function render() {
+        debug("extended " + arm.extended, 60);
+        debug("moves " + arm.move, 40);
         game.debug.inputInfo(32.0, 32.0);
         game.debug.pointer(game.input.activePointer);
         if (arm.gyro != null) {
@@ -124,21 +147,13 @@ window.onload = function() {
     }
 
     function onDown() {
+        // Fullscreen
         if (!game.scale.isFullScreen) {
             game.scale.startFullScreen(false);
             return;
         }
 
-        updateCommands();
-    }
-
-    function onGyro(o) {
-        arm.gyro = o;
-        let magnitude = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
-        arm.gyroMagnitude = Math.max(magnitude, arm.gyroMagnitude);
-    }
-
-    function updateCommands() {
+        // Arm movement state
         arm.move = true;
         if (arm.extended) {
             console.log("collapsing");
@@ -147,13 +162,43 @@ window.onload = function() {
         }
     }
 
+    function swapArm() {
+        switch(arm.type) {
+            case 1:
+                arm.sprite.loadTexture('arm-scissor', 0, false);
+                break;
+            case 2:
+                arm.sprite.loadTexture('arm-stone', 0, false);
+                break;
+            default:
+                arm.sprite.loadTexture('arm', 0, false);
+        }
+        arm.type += 1;
+        arm.type = arm.type % 3;
+    }
+
+    function onUp() {
+    }
+
+    function onGyro(o) {
+        arm.gyro = o;
+        let magnitude = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
+        arm.gyroMagnitude = Math.max(magnitude, arm.gyroMagnitude);
+    }
+
     function update() {
         updateMovingBusinessMan();
         updateArm();
     }
 
     function updateMovingBusinessMan() {
+        if (movingBusinessMan.sprite.x < game.world.centerX) {
+            movingBusinessMan.sprite.body.velocity.x = 100;
+        } else {
+            movingBusinessMan.sprite.body.velocity.x = 0;
+        }
         movingBusinessMan.sprite.body.velocity.y = 100;
+
         let y = movingBusinessMan.sprite.y;
         let targetY = game.world.centerY;
 
@@ -166,33 +211,40 @@ window.onload = function() {
         movingBusinessMan.sprite.scale.setTo(distanceRatio, distanceRatio);
     }
 
+    function resetArm() {
+        arm.sprite.anchor.setTo(...ARM_IDLE_ANCHOR);
+        arm.sprite.x = WIDTH;
+        arm.sprite.y = HEIGHT;
+        arm.sprite.angle = ARM_DEFAULT_ANGLE;
+        arm.extended = false;
+        arm.move = false;
+    }
+
     function updateArm() {
         // Extend
-        if (!arm.extended && arm.move) {
-            game.physics.arcade.accelerateToObject(arm.sprite, people.businessman.arm.sprite, EXTENSION_SPEED);
-            //arm.sprite.body.velocity.y = -1.0 * EXTENSION_SPEED;
-            //arm.sprite.body.velocity.x = -1.0 * EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
+        if (arm.hasToExpand()) {
+            //game.physics.arcade.accelerateToObject(arm.sprite, people.businessman.arm.sprite, EXTENSION_SPEED);
+            arm.sprite.body.velocity.x = -1.0 * EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
+            arm.sprite.body.velocity.y = -1.0 * EXTENSION_SPEED;
             console.log('negative velo');
-        } else if (arm.extended && arm.move) {
+        } else if (arm.hasToCollapse()) {
             //game.physics.arcade.accelerateToXY(arm.sprite, WIDTH, HEIGHT, EXTENSION_SPEED);
-            arm.sprite.body.velocity.y = EXTENSION_SPEED;
             arm.sprite.body.velocity.x = EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
+            arm.sprite.body.velocity.y = EXTENSION_SPEED;
             console.log('positive velo');
         }
 
         // Extension limit checks
-        if (arm.sprite.x < ARM_MIN_POS.x
-            || arm.sprite.y < ARM_MIN_POS.y) {
+        if (arm.isTooExtended()) {
+            console.log("stopping top left");
             arm.extended = true;
             arm.sprite.x = ARM_MIN_POS.x;
             arm.sprite.y = ARM_MIN_POS.y;
-            stopArmExtension();
-        } else if (arm.sprite.x > WIDTH
-                   || arm.sprite.y > HEIGHT) {
-            arm.extended = false;
-            arm.sprite.x = WIDTH;
-            arm.sprite.y = HEIGHT;
-            stopArmExtension();
+            stopArmMovement();
+        } else if (arm.isTooCollapsed()) {
+            console.log("stopping bottom right");
+            stopArmMovement();
+            resetArm();
         }
 
         if (arm.isIdle()) {
@@ -212,17 +264,19 @@ window.onload = function() {
         }
     }
 
-    function stopArmExtension() {
-        stopShaking();
-        arm.sprite.body.velocity.x = 0.0;
-        arm.sprite.body.velocity.y = 0.0;
-        arm.move = false;
-        console.log('stop extension');
+    function stopArmMovement() {
+        if (arm.move) {
+            stopShaking();
+            arm.sprite.body.velocity.setTo(0.0, 0.0);
+            arm.sprite.angle = ARM_DEFAULT_ANGLE;
+            arm.move = false;
+            console.log('stop movement');
+        }
     }
 
     function stopShaking() {
-        arm.sprite.body.angularVelocity = 0;
-        people.businessman.arm.sprite.body.angularVelocity = 0;
+        arm.sprite.body.angularVelocity = 0.0;
+        people.businessman.arm.sprite.body.angularVelocity = 0.0;
         arm.shake = false;
     }
 
