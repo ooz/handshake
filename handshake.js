@@ -61,7 +61,7 @@ window.onload = function() {
     }
 
     var people = {
-        businessman: {
+        primary: {
             arm: newArm(PEOPLE_ARM_DEFAULT_ANGLE, PEOPLE_ARM_SHAKE_AMPLITUDE),
             body: {},
             head: {}
@@ -78,7 +78,7 @@ window.onload = function() {
 
     function preload () {
         game.load.image('businessman', 'assets/businessman/businessman-complete.png')
-        game.load.image('businessman-head', 'assets/businessman/head00.png');
+        game.load.image('businessman-head', 'assets/businessman/head05.png');
         game.load.image('businessman-body', 'assets/businessman/businessman-body.png');
         game.load.image('businessman-arm', 'assets/businessman/businessman-arm-lower.png');
         game.load.image('arm', 'assets/hand/hand-paper.png');
@@ -99,11 +99,11 @@ window.onload = function() {
         movingBusinessMan.sprite.scale.setTo(0.2, 0.2);
 
         // Primary person
-        people.businessman.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-body');
-        people.businessman.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
-        people.businessman.head.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-head');
-        people.businessman.head.sprite.alignIn(people.businessman.body.sprite, Phaser.TOP_LEFT, -108, -33);
-        people.businessman.head.sprite.anchor.setTo(0.5, 1.0);
+        people.primary.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-body');
+        people.primary.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
+        people.primary.head.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-head');
+        people.primary.head.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -108, -33);
+        people.primary.head.sprite.anchor.setTo(0.5, 1.0);
 
         // Arm
         arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
@@ -111,14 +111,14 @@ window.onload = function() {
         resetArm();
 
         // Primary person arm
-        people.businessman.arm.sprite = game.add.sprite(0, 0, 'businessman-arm');
-        people.businessman.arm.sprite.alignIn(people.businessman.body.sprite, Phaser.TOP_LEFT, -18, -113);
-        people.businessman.arm.sprite.anchor.setTo(0.5, 17.0 / 137.0);
-        people.businessman.arm.sprite.angle = PEOPLE_ARM_DEFAULT_ANGLE;
+        people.primary.arm.sprite = game.add.sprite(0, 0, 'businessman-arm');
+        people.primary.arm.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -18, -113);
+        people.primary.arm.sprite.anchor.setTo(0.5, 17.0 / 137.0);
+        people.primary.arm.sprite.angle = PEOPLE_ARM_DEFAULT_ANGLE;
 
         // Physics
         game.physics.enable(movingBusinessMan.sprite, Phaser.Physics.ARCADE);
-        game.physics.enable(people.businessman.arm.sprite, Phaser.Physics.ARCADE);
+        game.physics.enable(people.primary.arm.sprite, Phaser.Physics.ARCADE);
         game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
 
         // Input
@@ -260,7 +260,7 @@ window.onload = function() {
         }
         if (arm.extended && (arm.shake || controls.shake.isDown)) {
             shake(arm, IDLE_SPEED * 10, arm.angleMagnitude);
-            shake(people.businessman.arm, IDLE_SPEED * 10 + 5, people.businessman.arm.angleMagnitude,
+            shake(people.primary.arm, IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude,
                   -1.0);
         }
     }
@@ -277,7 +277,7 @@ window.onload = function() {
 
     function stopShaking() {
         arm.sprite.body.angularVelocity = 0.0;
-        people.businessman.arm.sprite.body.angularVelocity = 0.0;
+        people.primary.arm.sprite.body.angularVelocity = 0.0;
         arm.shake = false;
     }
 
