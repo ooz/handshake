@@ -64,8 +64,8 @@ window.onload = function() {
 
     var controls = {
         shake: null,
-        //gyro: null,
         gyroMagnitude: 0.0,
+        nextHandButton: null
     }
 
     function newArm(defaultAngle, angleMagnitude) {
@@ -76,7 +76,7 @@ window.onload = function() {
     }
 
     function newPerson(kind) {
-        var sprite = game.add.sprite(0, 0, kind);
+        var sprite = game.add.sprite(0, 120, kind);
 
         sprite.anchor.setTo(0.3, 0.5);
         sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
@@ -112,6 +112,12 @@ window.onload = function() {
     }
 
     function preload () {
+        game.load.image('background', 'assets/level-01.png');
+
+        game.load.image('button-paper', 'assets/button/button-hand-paper.png');
+        game.load.image('button-scissors', 'assets/button/button-hand-scissors.png');
+        game.load.image('button-stone', 'assets/button/button-hand-stone.png');
+
         game.load.image('businessman', 'assets/businessman/businessman-complete.png');
         game.load.image('businessman-head', 'assets/businessman/head05.png');
         game.load.image('businessman-head-happy', 'assets/businessman/head-happy.png');
@@ -127,7 +133,8 @@ window.onload = function() {
     }
 
     function create () {
-        game.stage.backgroundColor = '#aaaa00';
+        game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'background');
+        //game.stage.backgroundColor = '#aaaa00';
 
         // Maintain aspect ratio
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -146,9 +153,13 @@ window.onload = function() {
 
         people.primary.arm.sprite.bringToTop();
 
+        // Buttons
+        controls.nextHandButton = game.add.button(0, HEIGHT - 60, 'button-scissors', onNextHand, this, 2, 1, 0);
+
         // Input
+        arm.sprite.inputEnabled = true;
+        arm.sprite.events.onInputDown.add(onHandDown, this);
         game.input.onDown.add(onDown, this);
-        game.input.onUp.add(onUp, this);
         if (gyro.hasFeature('devicemotion')) {
             gyro.frequency = 50; // ms
             gyro.startTracking(onGyro);
@@ -175,7 +186,9 @@ window.onload = function() {
             game.scale.startFullScreen(false);
             return;
         }
+    }
 
+    function onHandDown() {
         // Arm movement state
         arm.move = true;
         if (arm.extended) {
@@ -192,23 +205,27 @@ window.onload = function() {
             switch(arm.type) {
                 case 1:
                     arm.sprite.loadTexture('arm-scissor', 0, false);
+                    controls.nextHandButton.loadTexture('button-stone', 0, false);
                     break;
                 case 2:
                     arm.sprite.loadTexture('arm-stone', 0, false);
+                    controls.nextHandButton.loadTexture('button-paper', 0, false);
                     break;
                 default:
                     arm.sprite.loadTexture('arm', 0, false);
+                    controls.nextHandButton.loadTexture('button-scissors', 0, false);
             }
         }
-    }
-
-    function onUp() {
     }
 
     function onGyro(o) {
         //arm.gyro = o;
         let magnitude = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
         arm.gyroMagnitude = Math.max(magnitude, arm.gyroMagnitude);
+    }
+
+    function onNextHand() {
+        swapArm();
     }
 
     function setPrimaryVisible(visibility) {
@@ -218,6 +235,10 @@ window.onload = function() {
     }
 
     function update() {
+        if (!game.scale.isFullScreen) {
+            return;
+        }
+
         updateQueuedPeople();
         updateArm();
     }
@@ -343,7 +364,7 @@ window.onload = function() {
     }
 
     function debug(text, offset=20.0) {
-        game.debug.text(text, 0.0, HEIGHT - offset);
+        game.debug.text(text, 100.0, HEIGHT - offset);
     }
 
     function round(value) {
