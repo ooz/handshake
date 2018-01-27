@@ -72,7 +72,6 @@ window.onload = function() {
     var movingBusinessMan = {};
 
     var controls = {
-        leftDown: false,
         shake: null
     }
 
