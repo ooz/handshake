@@ -11,7 +11,8 @@ window.onload = function() {
     const ARM_IDLE_AMPLITUDE = 2.0;
     const ARM_IDLE_MIN_ANGLE = ARM_DEFAULT_ANGLE - ARM_IDLE_AMPLITUDE;
     const ARM_IDLE_MAX_ANGLE = ARM_DEFAULT_ANGLE + ARM_IDLE_AMPLITUDE;
-    const ARM_SHAKE_AMPLITUDE = 10.0; // in degree
+    const ARM_SHAKE_AMPLITUDE = ARM_IDLE_AMPLITUDE * 5.0; // in degree
+    const PEOPLE_ARM_SHAKE_AMPLITUDE = ARM_IDLE_AMPLITUDE * 10.0; // in degree
     const ARM_IDLE_ANCHOR = [0.5, 0.4];
     const ARM_MIN_POS = {
         x: 1.7 * WIDTH / 2.0,
@@ -34,12 +35,20 @@ window.onload = function() {
         idleUp: true,
         isIdle: function() {
             return !this.move && !this.extended
-        }
+        },
+        ...newArm(ARM_DEFAULT_ANGLE, ARM_SHAKE_AMPLITUDE)
     };
+
+    function newArm(defaultAngle, angleMagnitude) {
+        return {
+            defaultAngle: defaultAngle,
+            angleMagnitude: angleMagnitude
+        };
+    }
 
     var people = {
         businessman: {
-            arm: {},
+            arm: newArm(PEOPLE_ARM_DEFAULT_ANGLE, PEOPLE_ARM_SHAKE_AMPLITUDE),
             body: {},
             head: {}
         },
@@ -160,10 +169,12 @@ window.onload = function() {
     function updateArm() {
         // Extend
         if (!arm.extended && arm.move) {
-            arm.sprite.body.velocity.y = -1.0 * EXTENSION_SPEED;
-            arm.sprite.body.velocity.x = -1.0 * EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
+            game.physics.arcade.accelerateToObject(arm.sprite, people.businessman.arm.sprite, EXTENSION_SPEED);
+            //arm.sprite.body.velocity.y = -1.0 * EXTENSION_SPEED;
+            //arm.sprite.body.velocity.x = -1.0 * EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
             console.log('negative velo');
         } else if (arm.extended && arm.move) {
+            //game.physics.arcade.accelerateToXY(arm.sprite, WIDTH, HEIGHT, EXTENSION_SPEED);
             arm.sprite.body.velocity.y = EXTENSION_SPEED;
             arm.sprite.body.velocity.x = EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
             console.log('positive velo');
@@ -195,11 +206,14 @@ window.onload = function() {
             arm.shake = true;
         }
         if (arm.extended && (arm.shake || controls.shake.isDown)) {
-            shake(IDLE_SPEED * 10, ARM_IDLE_AMPLITUDE * 10);
+            shake(arm, IDLE_SPEED * 10, arm.angleMagnitude);
+            shake(people.businessman.arm, IDLE_SPEED * 10 + 5, people.businessman.arm.angleMagnitude,
+                  -1.0);
         }
     }
 
     function stopArmExtension() {
+        stopShaking();
         arm.sprite.body.velocity.x = 0.0;
         arm.sprite.body.velocity.y = 0.0;
         arm.move = false;
@@ -209,28 +223,29 @@ window.onload = function() {
     function stopShaking() {
         arm.sprite.body.angularVelocity = 0;
         people.businessman.arm.sprite.body.angularVelocity = 0;
+        arm.shake = false;
     }
 
-    function shake(speed=IDLE_SPEED, magnitude=ARM_IDLE_AMPLITUDE) {
-        // arm
-        let minAngle = ARM_DEFAULT_ANGLE - magnitude;
-        let maxAngle = ARM_DEFAULT_ANGLE + magnitude
+    function shake(armToShake=arm,
+                   speed=IDLE_SPEED,
+                   magnitude=ARM_IDLE_AMPLITUDE,
+                   direction=1.0) {
+        let minAngle = armToShake.defaultAngle - magnitude;
+        let maxAngle = armToShake.defaultAngle + magnitude;
 
         if (arm.idleUp) {
-            arm.sprite.body.angularVelocity = speed;
+            armToShake.sprite.body.angularVelocity = speed * direction;
         } else {
-            arm.sprite.body.angularVelocity = -1.0 * speed;
+            armToShake.sprite.body.angularVelocity = -1.0 * speed * direction;
         }
-        if (arm.sprite.angle > maxAngle) {
-            arm.sprite.angle = maxAngle;
+        if (armToShake.sprite.angle > maxAngle) {
+            armToShake.sprite.angle = maxAngle;
             arm.idleUp = false;
         }
-        if (arm.sprite.angle < minAngle) {
-            arm.sprite.angle = minAngle;
+        if (armToShake.sprite.angle < minAngle) {
+            armToShake.sprite.angle = minAngle;
             arm.idleUp = true;
         }
-
-        // business man
     }
 
     function debug(text, offset=20.0) {
