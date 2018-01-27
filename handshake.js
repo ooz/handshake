@@ -20,7 +20,6 @@ window.onload = function() {
         render: render
     });
 
-    var logo;
     var arm = {
         move: false,
         extended: false,
@@ -52,13 +51,10 @@ window.onload = function() {
     }
 
     function create () {
-        // Maintain aspect ratio
         game.stage.backgroundColor = '#fafa00';
-        game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
-        //logo = game.add.sprite(0, 0, 'logo');
-        //var tmp_bm = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman');
-        //tmp_bm.anchor.setTo(0.3, 0.5);
+        // Maintain aspect ratio
+        game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
         movingBusinessMan.sprite = game.add.sprite(game.world.centerX, 0, 'businessman');
         movingBusinessMan.sprite.anchor.setTo(0.5, 0.5);
