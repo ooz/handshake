@@ -64,7 +64,8 @@ window.onload = function() {
         primary: {
             arm: newArm(PEOPLE_ARM_DEFAULT_ANGLE, PEOPLE_ARM_SHAKE_AMPLITUDE),
             body: {},
-            head: {}
+            head: {},
+            group: null
         },
         queue: []
     };
@@ -98,6 +99,7 @@ window.onload = function() {
         movingBusinessMan.sprite.scale.setTo(0.2, 0.2);
 
         // Primary person
+        //people.primary.group = game.add.group();
         people.primary.body.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-body');
         people.primary.body.sprite.anchor.setTo(0.5, 0.5 - (70.5 / 409.0)); //people.businessman.sprite.y += 70.5;
         people.primary.head.sprite = game.add.sprite(game.world.centerX, game.world.centerY, 'businessman-head');
@@ -114,6 +116,7 @@ window.onload = function() {
         people.primary.arm.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -18, -113);
         people.primary.arm.sprite.anchor.setTo(0.5, 17.0 / 137.0);
         people.primary.arm.sprite.angle = PEOPLE_ARM_DEFAULT_ANGLE;
+        setPrimaryVisible(true);
 
         // Physics
         game.physics.enable(movingBusinessMan.sprite, Phaser.Physics.ARCADE);
@@ -184,6 +187,12 @@ window.onload = function() {
         arm.gyro = o;
         let magnitude = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z);
         arm.gyroMagnitude = Math.max(magnitude, arm.gyroMagnitude);
+    }
+
+    function setPrimaryVisible(visibility) {
+        people.primary.body.sprite.visibile = visibility;
+        people.primary.head.sprite.visibile = visibility;
+        people.primary.arm.sprite.visibile = visibility;
     }
 
     function update() {
