@@ -150,6 +150,14 @@ window.onload = function() {
             people.primary.expectation = newExpectation([0], [1, 2], 5000);
         } else if (kind === 'punk') {
             people.primary.expectation = newExpectation([1], [0, 2], 5000);
+        } else if (kind === 'granny') {
+            people.primary.expectation = newExpectation([0], [1, 2], 5000);
+        } else if (kind === 'nazi') {
+            people.primary.expectation = newExpectation([0], [1, 2], 5000);
+        } else if (kind === 'rapper') {
+            people.primary.expectation = newExpectation([0], [1, 2], 5000);
+        } else if (kind === 'alien') {
+            people.primary.expectation = newExpectation([0], [1, 2], 5000);
         }
 
         setPrimaryVisible(true);
@@ -188,6 +196,12 @@ window.onload = function() {
         game.load.image('businessman-arm', 'assets/businessman/businessman-arm-lower.png');
 
         game.load.image('granny', 'assets/granny/granny-complete.png');
+        game.load.image('granny-head', 'assets/granny/head.png');
+        game.load.image('granny-head-idle', 'assets/granny/head-idle.png');
+        game.load.image('granny-head-happy', 'assets/granny/head-happy.png');
+        game.load.image('granny-head-ouch', 'assets/granny/head-ouch.png');
+        game.load.image('granny-body', 'assets/granny/granny-body.png');
+        game.load.image('granny-arm', 'assets/granny/granny-arm.png');
 
         game.load.image('punk', 'assets/punk/punk-complete.png');
         game.load.image('punk-head', 'assets/punk/head.png');
@@ -375,7 +389,7 @@ window.onload = function() {
         if (sprite.x > 1.5 * WIDTH || sprite.x < -0.5 * WIDTH) {
             people.fadeoutQueue.removeChild(sprite);
             sprite.destroy();
-            people.queue.add(newPerson(randomItem(['businessman', 'punk'])));
+            people.queue.add(newPerson(randomItem(['businessman', 'punk', 'granny'])));
         }
     }
 
