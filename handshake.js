@@ -202,15 +202,18 @@ window.onload = function() {
         if (kind === 'businessman') {
             people.primary.expectation = newExpectation([0], [1, 2], 4000);
         } else if (kind === 'punk') {
-            people.primary.expectation = newExpectation([1], [0, 2], 3000);
+            people.primary.expectation = newExpectation([1], [0, 2], 3000, -10);
         } else if (kind === 'granny') {
             people.primary.expectation = newExpectation([0], [1, 2], 1500);
         } else if (kind === 'nazi') {
-            people.primary.expectation = newExpectation([0], [1, 2], 2000);
+            people.primary.expectation = newExpectation([0], [1, 2], 2000, -10);
         } else if (kind === 'rapper') {
             people.primary.expectation = newExpectation([2], [0, 1], 15000);
         } else if (kind === 'alien') {
-            people.primary.expectation = newExpectation([0], [1, 2], 10000);
+            let moves = [0, 1, 2];
+            let favMove = randomItem(moves);
+            delete moves[favMove];
+            people.primary.expectation = newExpectation([favMove], moves, 10000);
         }
 
         people.primary.playIntro();
