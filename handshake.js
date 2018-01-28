@@ -6,7 +6,7 @@ window.onload = function() {
     const EXTENSION_SPEED = 2000.0;
 
     // Person types
-    const FIRST_PERSON = 'alien';
+    const FIRST_PERSON = 'businessman';
     //const PERSONS = ['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'];
     const PERSONS = ['alien'];
 
@@ -147,11 +147,12 @@ window.onload = function() {
     }
 
     function newPerson(kind) {
-        var sprite = game.add.sprite(0, 120, kind);
+        let startX = randomItem([-50, 350]);
+        var sprite = game.add.sprite(startX, 95, kind);
 
         sprite.anchor.setTo(0.5, 0.5);
         sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
-        sprite.scale.setTo(0.2, 0.2);
+        sprite.scale.setTo(0.1, 0.1);
         sprite.name = kind;
         sprite.data.exitStrategy = randomItem([-1, 1]);
 
@@ -292,7 +293,7 @@ window.onload = function() {
         game.load.image('arm-paper', 'assets/hand/hand-paper.png');
         game.load.image('arm-scissor', 'assets/hand/hand-scissor.png');
         game.load.image('arm-stone', 'assets/hand/hand-stone.png');
-        game.load.image('arm-paper-dirty', 'assets/hand/hand-paper-dirty.png');
+        game.load.image('arm-paper-dirty', 'assets/hand/hand-paper-poisoned.png');
         game.load.image('arm-scissor-dirty', 'assets/hand/hand-scissor-dirty.png');
         game.load.image('arm-stone-dirty', 'assets/hand/hand-stone-dirty.png');
 
@@ -374,8 +375,8 @@ window.onload = function() {
 
     function render() {
         //game.debug.inputInfo(32.0, 32.0);
-        debug("shakeTime " + round(arm.shakeTime));
-        game.debug.sound(6, 40);
+        //debug("shakeTime " + round(arm.shakeTime));
+        //game.debug.sound(6, 40);
     }
 
     function onDown() {
@@ -515,17 +516,27 @@ window.onload = function() {
         people.fadeoutQueue.forEach(updateFadeoutPerson, this);
     }
 
+    const EPSILON = 2.0;
     function updateBackgroundPerson(sprite) {
         if (people.primary.sprite !== null) { return; }
 
-        if (sprite.x < game.world.centerX) {
+        if (sprite.x < game.world.centerX - EPSILON) {
             sprite.body.velocity.x = 100;
+        } else if (sprite.x > game.world.centerX + EPSILON) {
+            sprite.body.velocity.x = -100;
+        } else {
+            sprite.body.velocity.x = 0;
+        }
+
+        if (sprite.y < game.world.centerY) {
+            if (sprite.x >= 50 && sprite.x <= 250) {
+                sprite.body.velocity.y = 100;
+            }
         } else {
             sprite.body.velocity.x = 0;
             handover(sprite);
             return;
         }
-        sprite.body.velocity.y = 100;
 
         let y = sprite.y;
         let targetY = game.world.centerY;
@@ -541,7 +552,8 @@ window.onload = function() {
 
     function updateFadeoutPerson(sprite) {
         sprite.visibility = true;
-        sprite.body.velocity.x = sprite.data.exitStrategy * 150;
+        sprite.body.velocity.x = sprite.data.exitStrategy * 350;
+        sprite.body.velocity.y = 50;
 
         if (sprite.x > 1.5 * WIDTH || sprite.x < -0.5 * WIDTH) {
             people.fadeoutQueue.removeChild(sprite);
@@ -742,6 +754,7 @@ window.onload = function() {
 
         // Normal, non-hacky behaviour
         if (audio != lastAudio) {
+            if (audio == undefined) { return; }
             audio.play('', 0, 1, false, false);
             lastAudio = audio;
         }
