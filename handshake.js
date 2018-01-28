@@ -6,9 +6,9 @@ window.onload = function() {
     const EXTENSION_SPEED = 2000.0;
 
     // Person types
-    const FIRST_PERSON = 'rapper';
+    const FIRST_PERSON = 'alien';
     //const PERSONS = ['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'];
-    const PERSONS = ['rapper'];
+    const PERSONS = ['alien'];
 
     // Head idling
     const IDLE_MAX_DISTANCE = 2.0;
@@ -297,6 +297,10 @@ window.onload = function() {
         game.load.image('arm-stone-dirty', 'assets/hand/hand-stone-dirty.png');
 
         // Audio
+        game.load.audio('alien-intro', ['assets/alien/alien-intro.ogg']);
+        game.load.audio('alien-positive', ['assets/alien/alien-positiv.ogg']);
+        game.load.audio('alien-negative', ['assets/alien/alien-negativ.ogg']);
+
         game.load.audio('rapper-intro', ['assets/rapper/rapper-intro.mp3']);
         game.load.audio('rapper-positive', ['assets/rapper/rapper-positiv-bro.ogg']);
         game.load.audio('rapper-negative', ['assets/rapper/rapper-negativ.mp3']);
@@ -315,9 +319,13 @@ window.onload = function() {
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
         // Create sounds
+        sounds.alien.intro = game.add.audio('alien-intro');
+        sounds.alien.positive = game.add.audio('alien-positive');
+        sounds.alien.negative = game.add.audio('alien-negative');
         sounds.rapper.intro = game.add.audio('rapper-intro');
         sounds.rapper.positive = game.add.audio('rapper-positive');
         sounds.rapper.negative = game.add.audio('rapper-negative');
+
         sounds.arm.punch = game.add.audio('arm-punch');
         sounds.arm.punchmega = game.add.audio('arm-punch-mega');
         sounds.arm.heal = game.add.audio('arm-heal');
