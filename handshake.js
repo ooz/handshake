@@ -477,23 +477,19 @@ window.onload = function() {
             //game.physics.arcade.accelerateToObject(arm.sprite, people.businessman.arm.sprite, EXTENSION_SPEED);
             arm.sprite.body.velocity.x = -1.0 * EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
             arm.sprite.body.velocity.y = -1.0 * EXTENSION_SPEED;
-            console.log('negative velo');
         } else if (arm.hasToCollapse()) {
             //game.physics.arcade.accelerateToXY(arm.sprite, WIDTH, HEIGHT, EXTENSION_SPEED);
             arm.sprite.body.velocity.x = EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
             arm.sprite.body.velocity.y = EXTENSION_SPEED;
-            console.log('positive velo');
         }
 
         // Extension limit checks
         if (arm.isTooExtended()) {
-            console.log("stopping top left");
             arm.extended = true;
             arm.sprite.x = ARM_MIN_POS.x;
             arm.sprite.y = ARM_MIN_POS.y;
             stopArmMovement();
         } else if (arm.isTooCollapsed()) {
-            console.log("stopping bottom right");
             stopArmMovement();
             resetArm();
         }
@@ -519,7 +515,7 @@ window.onload = function() {
             } else if (arm.shake || controls.pressesShake()) {
                 shake(arm, IDLE_SPEED * 10, arm.angleMagnitude);
 
-                console.log("name: " + people.primary.head.sprite.name);
+                console.log("Shaking: " + people.primary.head.sprite.name);
                 if (people.primary.expectation.happyTypes.includes(arm.type)) {
                     shake(people.primary.arm, IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude, -1.0);
                     people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-happy', 0, false);
@@ -536,7 +532,6 @@ window.onload = function() {
             arm.sprite.body.velocity.setTo(0.0, 0.0);
             arm.sprite.angle = ARM_DEFAULT_ANGLE;
             arm.move = false;
-            console.log('stop movement');
         }
     }
 
