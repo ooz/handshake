@@ -4,13 +4,14 @@ window.onload = function() {
     const HEIGHT = 600.0;
     const WIDTH_HEIGHT_RATIO = WIDTH / HEIGHT;
     const EXTENSION_SPEED = 2000.0;
-    const IDLE_SPEED = 8.0;
 
     // Head idling
     const IDLE_MAX_DISTANCE = 2.0;
     const IDLE_HEAD_SPEED = 5.0;
 
+    // Arms and shaking
     const ARM_DEFAULT_ANGLE = -33.0;
+    const ARM_IDLE_SPEED = 8.0;
     const PEOPLE_ARM_DEFAULT_ANGLE = ARM_DEFAULT_ANGLE - 15;
     const ARM_IDLE_AMPLITUDE = 2.0;
     const ARM_IDLE_MIN_ANGLE = ARM_DEFAULT_ANGLE - ARM_IDLE_AMPLITUDE;
@@ -112,8 +113,6 @@ window.onload = function() {
         var sprite = game.add.sprite(game.world.centerX, game.world.centerY, kind);
 
         sprite.anchor.setTo(0.5, 0.5);
-        //sprite.setScaleMinMax(0.0, 0.0, 1.0, 1.0);
-        //sprite.scale.setTo(0.2, 0.2);
         sprite.name = kind;
         sprite.data.exitStrategy = randomItem([-1, 1]);
 
@@ -161,7 +160,7 @@ window.onload = function() {
         }
 
         setPrimaryVisible(true);
-        people.primary.sprite.kill();// = false;
+        people.primary.sprite.kill();
     }
     function destroyPrimary() {
         people.primary.body.sprite.destroy();
@@ -366,30 +365,28 @@ window.onload = function() {
         updateQueuedPeople();
         updateArm();
 
-        // Dirty idle code
+        updatePrimaryIdle();
+    }
+
+    function updatePrimaryIdle() {
         if (people.primary.sprite == null) { return; }
         let headDistance = distance(people.primary.head.origin.x,
                                     people.primary.head.origin.y,
                                     people.primary.head.sprite.x,
                                     people.primary.head.sprite.y);
         if (headDistance > IDLE_MAX_DISTANCE) {
-            //people.primary.head.sprite.body.velocity.x = 0;
-            //people.primary.head.sprite.body.velocity.y = 0;
-            //game.physics.arcade.accelerateToXY(people.primary.head.sprite, WIDTH, HEIGHT, EXTENSION_SPEED);
-            //people.primary.head.sprite.position.setTo(people.primary.head.origin.x, people.primary.head.origin.y);
             people.primary.head.sprite.body.velocity.y = -1 * IDLE_HEAD_SPEED;
         } else if (round(headDistance) === 0.0) {
             // Reset and start idling again
-            //people.primary.head.sprite.reset(people.primary.head.origin.x, people.primary.head.origin.y);
             people.primary.head.sprite.body.velocity.y = IDLE_HEAD_SPEED;
         }
-
     }
 
     function updateQueuedPeople() {
         people.queue.forEach(updateBackgroundPerson, this);
         people.fadeoutQueue.forEach(updateFadeoutPerson, this);
     }
+
     function updateBackgroundPerson(sprite) {
         if (people.primary.sprite !== null) { return; }
 
@@ -413,6 +410,7 @@ window.onload = function() {
 
         sprite.scale.setTo(distanceRatio, distanceRatio);
     }
+
     function updateFadeoutPerson(sprite) {
         sprite.visibility = true;
         sprite.body.velocity.x = sprite.data.exitStrategy * 150;
@@ -425,33 +423,15 @@ window.onload = function() {
     }
 
     function handover(sprite) {
-        /*
-        oldPrimaryType = null;
-        if (people.primary.sprite !== null) {
-            oldPrimaryType = people.primary.sprite.name;
-        }
-        */
         newPrimaryType = sprite.name;
 
         people.queue.removeChild(sprite);
         sprite.destroy();
-        /*
-        if (people.primary.sprite !== null) {
-            destroyPrimary();
-        }
-        */
-        fadeoutPrimary();
 
+        fadeoutPrimary();
         newPrimary(newPrimaryType);
 
-        /*
-        if (people.primary.sprite !== null) {
-            people.fadeoutQueue.add(newExitPerson(oldPrimaryType));
-        }
-        */
-
         arm.sprite.bringToTop();
-
         people.primary.arm.sprite.bringToTop();
     }
 
@@ -513,11 +493,11 @@ window.onload = function() {
                 people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-ouch', 0, false);
                 retreat(people.primary.arm)
             } else if (arm.shake || controls.pressesShake()) {
-                shake(arm, IDLE_SPEED * 10, arm.angleMagnitude);
+                shake(arm, ARM_IDLE_SPEED * 10, arm.angleMagnitude);
 
                 console.log("Shaking: " + people.primary.head.sprite.name);
                 if (people.primary.expectation.happyTypes.includes(arm.type)) {
-                    shake(people.primary.arm, IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude, -1.0);
+                    shake(people.primary.arm, ARM_IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude, -1.0);
                     people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-happy', 0, false);
                 }
             }
@@ -547,7 +527,7 @@ window.onload = function() {
     }
 
     function shake(armToShake=arm,
-                   speed=IDLE_SPEED,
+                   speed=ARM_IDLE_SPEED,
                    magnitude=ARM_IDLE_AMPLITUDE,
                    direction=1.0) {
         let minAngle = armToShake.defaultAngle - magnitude;
@@ -569,7 +549,7 @@ window.onload = function() {
     }
 
     function retreat(armToRetreat,
-                     speed=IDLE_SPEED * 50 + 5,
+                     speed=ARM_IDLE_SPEED * 50 + 5,
                      direction=1.0,
                      stopAngle=-100) {
         armToRetreat.sprite.body.angularVelocity = -1.0 * speed * direction;
