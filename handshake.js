@@ -155,7 +155,7 @@ window.onload = function() {
         } else if (kind === 'nazi') {
             people.primary.expectation = newExpectation([0], [1, 2], 5000);
         } else if (kind === 'rapper') {
-            people.primary.expectation = newExpectation([0], [1, 2], 5000);
+            people.primary.expectation = newExpectation([2], [0, 1], 5000);
         } else if (kind === 'alien') {
             people.primary.expectation = newExpectation([0], [1, 2], 5000);
         }
@@ -245,14 +245,14 @@ window.onload = function() {
         people.fadeoutQueue = game.add.group();
 
         // Primary person
-        newPrimary('businessman');
+        //newPrimary('businessman');
 
         // Arm
         arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
         game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
         resetArm();
 
-        people.primary.arm.sprite.bringToTop();
+        //people.primary.arm.sprite.bringToTop();
 
         // Buttons
         controls.nextHandButton = game.add.button(0, HEIGHT - 60, 'button-scissors', onNextHand, this, 2, 1, 0);
@@ -353,6 +353,7 @@ window.onload = function() {
         updateArm();
 
         // Dirty idle code
+        if (people.primary.sprite == null) { return; }
         let headDistance = distance(people.primary.head.origin.x,
                                     people.primary.head.origin.y,
                                     people.primary.head.sprite.x,
@@ -410,17 +411,26 @@ window.onload = function() {
     }
 
     function handover(sprite) {
-        oldPrimaryType = people.primary.sprite.name;
+        oldPrimaryType = null;
+        if (people.primary.sprite !== null) {
+            oldPrimaryType = people.primary.sprite.name;
+        }
         newPrimaryType = sprite.name;
 
         people.queue.removeChild(sprite);
         sprite.destroy();
-        destroyPrimary();
+        if (people.primary.sprite !== null) {
+            destroyPrimary();
+        }
+
         newPrimary(newPrimaryType);
 
-        people.fadeoutQueue.add(newExitPerson(oldPrimaryType));
+        if (people.primary.sprite !== null) {
+            people.fadeoutQueue.add(newExitPerson(oldPrimaryType));
+        }
 
         arm.sprite.bringToTop();
+
         people.primary.arm.sprite.bringToTop();
     }
 
@@ -470,6 +480,8 @@ window.onload = function() {
         if (arm.gyroMagnitude >= 20.0) {
             arm.shake = true;
         }
+
+        if (people.primary.sprite == null) { return; }
         if (arm.extended) {
             if (people.primary.expectation.ouchTypes.includes(arm.type)) {
                 people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-ouch', 0, false);
@@ -505,6 +517,7 @@ window.onload = function() {
     }
 
     function stopPrimaryShaking() {
+        if (people.primary.sprite == null) { return; }
         people.primary.arm.sprite.body.angularVelocity = 0.0;
     }
 
