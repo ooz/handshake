@@ -36,6 +36,8 @@ window.onload = function() {
 
     var arm = {
         power: 0.0,
+        multiplier: 1.0,
+        shakeTime: 0.0, // ms
         type: 0, // 0 Paper, 1 scissor, 2 stone
         move: false,
         extended: false,
@@ -152,17 +154,17 @@ window.onload = function() {
         people.primary.timeWithoutBlink = 0.0;
 
         if (kind === 'businessman') {
-            people.primary.expectation = newExpectation([0], [1, 2], 5000);
+            people.primary.expectation = newExpectation([0], [1, 2], 4000);
         } else if (kind === 'punk') {
-            people.primary.expectation = newExpectation([1], [0, 2], 5000);
+            people.primary.expectation = newExpectation([1], [0, 2], 3000);
         } else if (kind === 'granny') {
-            people.primary.expectation = newExpectation([0], [1, 2], 5000);
+            people.primary.expectation = newExpectation([0], [1, 2], 1500);
         } else if (kind === 'nazi') {
-            people.primary.expectation = newExpectation([0], [1, 2], 5000);
+            people.primary.expectation = newExpectation([0], [1, 2], 2000);
         } else if (kind === 'rapper') {
-            people.primary.expectation = newExpectation([2], [0, 1], 5000);
+            people.primary.expectation = newExpectation([2], [0, 1], 15000);
         } else if (kind === 'alien') {
-            people.primary.expectation = newExpectation([0], [1, 2], 5000);
+            people.primary.expectation = newExpectation([0], [1, 2], 10000);
         }
 
         setPrimaryVisible(true);
@@ -291,8 +293,8 @@ window.onload = function() {
 
     function render() {
         //game.debug.inputInfo(32.0, 32.0);
-        debug("powr " + round(arm.power), 2);
-        debug("gyro " + round(arm.gyroMagnitude));
+        debug("shakeTime " + round(arm.shakeTime), 2);
+        debug("powr " + round(arm.power));
     }
 
     function onDown() {
@@ -502,10 +504,10 @@ window.onload = function() {
         if (arm.isIdle()) {
             shake();
         } else {
-            stopShaking();
+            stopIdleShaking();
         }
 
-        // Shaking
+        // Fast forward ;)
         if (arm.gyroMagnitude >= 20.0) {
             arm.shake = true;
             powerShake();
@@ -515,6 +517,9 @@ window.onload = function() {
 
     function updatePrimary() {
         if (people.primary.sprite == null) { return; }
+        if (!(arm.shake || controls.pressesShake())) {
+            arm.shakeTime = 0.0;
+        }
         if (arm.extended) {
             if (people.primary.expectation.ouchTypes.includes(arm.type)) {
                 people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-ouch', 0, false);
@@ -522,7 +527,6 @@ window.onload = function() {
             } else if (arm.shake || controls.pressesShake()) {
                 shake(arm, ARM_IDLE_SPEED * 10, arm.angleMagnitude);
 
-                console.log("Shaking: " + people.primary.head.sprite.name);
                 if (people.primary.expectation.happyTypes.includes(arm.type)) {
                     shake(people.primary.arm, ARM_IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude, -1.0);
                     people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-happy', 0, false);
@@ -542,7 +546,7 @@ window.onload = function() {
         }
     }
 
-    function stopShaking() {
+    function stopIdleShaking() {
         arm.sprite.body.angularVelocity = 0.0;
         arm.shake = false;
         stopPrimaryShaking();
@@ -557,6 +561,11 @@ window.onload = function() {
                    speed=ARM_IDLE_SPEED,
                    magnitude=ARM_IDLE_AMPLITUDE,
                    direction=1.0) {
+        if (magnitude > ARM_IDLE_AMPLITUDE) {
+            // Active shake, record time
+            arm.shakeTime += game.time.elapsed;
+        }
+
         let minAngle = armToShake.defaultAngle - magnitude;
         let maxAngle = armToShake.defaultAngle + magnitude;
 
