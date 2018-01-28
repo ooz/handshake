@@ -7,9 +7,8 @@ window.onload = function() {
     const IDLE_SPEED = 8.0;
 
     // Head idling
-    const MAX_DISTANCE = 5.0;
-    const IDLE_MIN_SPEED = 10.0;
-    const IDLE_MAX_SPEED = 50.0;
+    const IDLE_MAX_DISTANCE = 2.0;
+    const IDLE_HEAD_SPEED = 5.0;
 
     const ARM_DEFAULT_ANGLE = -33.0;
     const PEOPLE_ARM_DEFAULT_ANGLE = ARM_DEFAULT_ANGLE - 15;
@@ -134,7 +133,10 @@ window.onload = function() {
         people.primary.head.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -108, -33);
         people.primary.head.sprite.anchor.setTo(0.5, 1.0);
         people.primary.head.sprite.name = kind;
-        people.primary.head.origin = [people.primary.head.sprite.x, people.primary.head.sprite.y];
+        people.primary.head.origin = {
+            x: people.primary.head.sprite.x,
+            y: people.primary.head.sprite.y
+        };
         people.primary.arm.sprite = game.add.sprite(0, 0, kind + '-arm');
         people.primary.arm.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -18, -113);
         people.primary.arm.sprite.anchor.setTo(0.5, 17.0 / 137.0);
@@ -156,6 +158,7 @@ window.onload = function() {
         people.primary.body.sprite.destroy();
         people.primary.head.sprite.destroy();
         people.primary.arm.sprite.destroy();
+        people.primary.sprite.destroy();
     }
 
     function newExpectation(happys, ouchs, stamina, power=10, shakables=[0], multiplier=1) {
@@ -318,6 +321,25 @@ window.onload = function() {
 
         updateQueuedPeople();
         updateArm();
+
+        // Dirty idle code
+        let headDistance = distance(people.primary.head.origin.x,
+                                    people.primary.head.origin.y,
+                                    people.primary.head.sprite.x,
+                                    people.primary.head.sprite.y);
+        debug("dist " + headDistance, 4);
+        if (headDistance > IDLE_MAX_DISTANCE) {
+            //people.primary.head.sprite.body.velocity.x = 0;
+            //people.primary.head.sprite.body.velocity.y = 0;
+            //game.physics.arcade.accelerateToXY(people.primary.head.sprite, WIDTH, HEIGHT, EXTENSION_SPEED);
+            //people.primary.head.sprite.position.setTo(people.primary.head.origin.x, people.primary.head.origin.y);
+            people.primary.head.sprite.body.velocity.y = -1 * IDLE_HEAD_SPEED;
+        } else if (round(headDistance) === 0.0) {
+            // Reset and start idling again
+            //people.primary.head.sprite.reset(people.primary.head.origin.x, people.primary.head.origin.y);
+            people.primary.head.sprite.body.velocity.y = IDLE_HEAD_SPEED;
+        }
+
     }
 
     function updateQueuedPeople() {
@@ -349,12 +371,19 @@ window.onload = function() {
         console.log("updating fadeout " + sprite.name + " " + sprite.data.exitStrategy);
         sprite.visibility = true;
         sprite.body.velocity.x = sprite.data.exitStrategy * 150;
+
+        if (sprite.x > 2 * WIDTH || sprite.x < -2 * WIDTH) {
+            people.fadeoutQueue.removeChild(sprite);
+            sprite.destroy();
+            people.queue.add(newPerson(randomItem(['businessman', 'punk'])));
+        }
     }
 
     function handover(sprite) {
         oldPrimaryType = people.primary.sprite.name;
         newPrimaryType = sprite.name;
 
+        people.queue.removeChild(sprite);
         sprite.destroy();
         destroyPrimary();
         newPrimary(newPrimaryType);
@@ -424,6 +453,8 @@ window.onload = function() {
                     people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-happy', 0, false);
                 }
             }
+        } else {
+            people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head', 0, false);
         }
     }
 
@@ -488,26 +519,16 @@ window.onload = function() {
     }
 
     function random(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+        return game.rnd.between(min, max);
     }
     function randomItem(items) {
-        return items[Math.floor(Math.random() * items.length)];
+        return game.rnd.pick(items);
+    }
+    function frac() {
+        return game.rnd.frac();
     }
     function distance(x1, y1, x2, y2) {
         return Phaser.Math.distance(x1, y1, x2, y2);
-    }
-
-    function translateAnchor(sprite) {
-        let moveX = WIDTH - sprite.x;
-        let moveY = HEIGHT - sprite.y;
-
-        let offsetRatioX = moveX / arm.sprite.width;
-        let offsetRatioY = moveY / arm.sprite.height;
-        console.log("ox" + offsetRatioX + " oy" + offsetRatioY);
-
-        sprite.position.setTo(sprite.x + moveX, sprite.y + moveY);
-        sprite.anchor.setTo(ARM_IDLE_ANCHOR[0] + offsetRatioX,
-                            ARM_IDLE_ANCHOR[1] + offsetRatioY);
     }
 
 };
