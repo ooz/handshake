@@ -561,11 +561,9 @@ window.onload = function() {
     function debug(text, line=1.0) {
         game.debug.text(text, 100.0, HEIGHT - line * 20.0);
     }
-
     function round(value) {
         return Math.round(value * 100) / 100;
     }
-
     function random(min, max) {
         return game.rnd.between(min, max);
     }
