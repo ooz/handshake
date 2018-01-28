@@ -275,7 +275,6 @@ window.onload = function() {
 
     function render() {
         //game.debug.inputInfo(32.0, 32.0);
-        debug("fdOQ " + people.fadeoutQueue.length, 3);
         debug("powr " + round(arm.power), 2);
         debug("gyro " + round(arm.gyroMagnitude));
     }
@@ -358,7 +357,6 @@ window.onload = function() {
                                     people.primary.head.origin.y,
                                     people.primary.head.sprite.x,
                                     people.primary.head.sprite.y);
-        debug("dist " + headDistance, 4);
         if (headDistance > IDLE_MAX_DISTANCE) {
             //people.primary.head.sprite.body.velocity.x = 0;
             //people.primary.head.sprite.body.velocity.y = 0;
