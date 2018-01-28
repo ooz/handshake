@@ -302,6 +302,7 @@ window.onload = function() {
         game.load.audio('rapper-negative', ['assets/rapper/rapper-negativ.mp3']);
 
         game.load.audio('arm-punch', ['assets/audio/system-punch-hard.ogg']);
+        game.load.audio('arm-punch-mega', ['assets/audio/system-punch-strong.ogg']);
         game.load.audio('arm-cough', ['assets/audio/system-husten.ogg']);
         game.load.audio('arm-heal', ['assets/audio/system-handclean.ogg']);
     }
@@ -318,6 +319,7 @@ window.onload = function() {
         sounds.rapper.positive = game.add.audio('rapper-positive');
         sounds.rapper.negative = game.add.audio('rapper-negative');
         sounds.arm.punch = game.add.audio('arm-punch');
+        sounds.arm.punchmega = game.add.audio('arm-punch-mega');
         sounds.arm.heal = game.add.audio('arm-heal');
         sounds.arm.cough = game.add.audio('arm-cough');
 
@@ -379,6 +381,9 @@ window.onload = function() {
     function onArmMove() {
         // Arm movement state
         arm.move = true;
+        if (!arm.extended) {
+            lastAudio = undefined;
+        }
     }
 
     function onShake() {
@@ -386,6 +391,7 @@ window.onload = function() {
             onArmMove();
             return;
         }
+
 
         arm.shake = true;
     }
@@ -418,6 +424,7 @@ window.onload = function() {
         // Punch!
         setArmType(2);
         onArmMove();
+        dispatchAudio(randomItem([sounds.arm.punch, sounds.arm.punchmega]));
         fadeoutPrimary(true);
     }
 
@@ -718,6 +725,14 @@ window.onload = function() {
 
     var lastAudio = undefined;
     function dispatchAudio(audio) {
+        // MEGA HACK
+        let punchAudioGroup = [sounds.arm.punch, sounds.arm.punchmega];
+        if (punchAudioGroup.includes(lastAudio)
+            && punchAudioGroup.includes(audio)) {
+            return;
+        }
+
+        // Normal, non-hacky behaviour
         if (audio != lastAudio) {
             audio.play('', 0, 1, false, false);
             lastAudio = audio;
