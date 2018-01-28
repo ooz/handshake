@@ -6,9 +6,9 @@ window.onload = function() {
     const EXTENSION_SPEED = 2000.0;
 
     // Person types
-    const FIRST_PERSON = 'punk';
+    const FIRST_PERSON = 'nazi';
     //const PERSONS = ['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'];
-    const PERSONS = ['punk'];
+    const PERSONS = ['nazi'];
 
     // Head idling
     const IDLE_MAX_DISTANCE = 2.0;
@@ -306,6 +306,10 @@ window.onload = function() {
         game.load.audio('punk-positive', ['assets/punk/punk-positiv.ogg']);
         game.load.audio('punk-negative', ['assets/punk/punk-negativ.ogg']);
 
+        game.load.audio('nazi-intro', ['assets/nazi/nazi-intro.ogg']);
+        game.load.audio('nazi-positive', ['assets/nazi/nazi-positiv.ogg']);
+        game.load.audio('nazi-negative', ['assets/nazi/nazi-negativ.ogg']);
+
         game.load.audio('alien-intro', ['assets/alien/alien-intro.ogg']);
         game.load.audio('alien-positive', ['assets/alien/alien-positiv.ogg']);
         game.load.audio('alien-negative', ['assets/alien/alien-negativ.ogg']);
@@ -334,6 +338,9 @@ window.onload = function() {
         sounds.punk.intro = game.add.audio('punk-intro');
         sounds.punk.positive = game.add.audio('punk-positive');
         sounds.punk.negative = game.add.audio('punk-negative');
+        sounds.nazi.intro = game.add.audio('nazi-intro');
+        sounds.nazi.positive = game.add.audio('nazi-positive');
+        sounds.nazi.negative = game.add.audio('nazi-negative');
         sounds.alien.intro = game.add.audio('alien-intro');
         sounds.alien.positive = game.add.audio('alien-positive');
         sounds.alien.negative = game.add.audio('alien-negative');
