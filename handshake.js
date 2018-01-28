@@ -161,6 +161,7 @@ window.onload = function() {
         }
 
         setPrimaryVisible(true);
+        people.primary.sprite.kill();// = false;
     }
     function destroyPrimary() {
         people.primary.body.sprite.destroy();
@@ -319,7 +320,6 @@ window.onload = function() {
         }
     }
     function setArmType(type) {
-        console.log("Setting arm type: " + type);
         arm.type = type % 3;
         switch(arm.type) {
             case 1:
@@ -507,6 +507,8 @@ window.onload = function() {
         // Shaking
         if (arm.gyroMagnitude >= 20.0) {
             arm.shake = true;
+            powerShake();
+            arm.gyroMagnitude = 0.0;
         }
 
         if (people.primary.sprite == null) { return; }
