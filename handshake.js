@@ -188,9 +188,11 @@ window.onload = function() {
             y: people.primary.head.sprite.y
         };
         people.primary.arm.sprite = game.add.sprite(0, 0, kind + '-arm');
+        people.primary.arm.sprite.name = kind;
         people.primary.arm.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -18, -113);
         people.primary.arm.sprite.anchor.setTo(0.5, 17.0 / 137.0);
-        people.primary.arm.sprite.angle = PEOPLE_ARM_DEFAULT_ANGLE;
+        people.primary.arm.sprite.angle = (kind === 'nazi') ? 180 : PEOPLE_ARM_DEFAULT_ANGLE;
+        people.primary.arm.defaultAngle = (kind === 'nazi') ? 175 : ARM_DEFAULT_ANGLE;
 
         game.physics.enable(people.primary.head.sprite, Phaser.Physics.ARCADE);
         game.physics.enable(people.primary.sprite, Phaser.Physics.ARCADE);
@@ -739,8 +741,21 @@ window.onload = function() {
                      speed=ARM_IDLE_SPEED * 50 + 5,
                      direction=1.0,
                      stopAngle=-100) {
-        armToRetreat.sprite.body.angularVelocity = -1.0 * speed * direction;
-        if (armToRetreat.sprite.angle < stopAngle) {
+        let isNazi = armToRetreat.sprite.name === 'nazi';
+        if (isNazi) {
+            stopAngle = 180;
+            console.log('found nazi to retreat');
+        }
+
+        if (!isNazi) {
+            armToRetreat.sprite.body.angularVelocity = -1.0 * speed * direction;
+        } else {
+            armToRetreat.sprite.body.angularVelocity = speed * direction;
+        }
+
+        if (!isNazi && armToRetreat.sprite.angle < stopAngle) {
+            armToRetreat.sprite.angle = stopAngle;
+        } else if (isNazi && armToRetreat.sprite.angle < stopAngle) {
             armToRetreat.sprite.angle = stopAngle;
         }
     }
