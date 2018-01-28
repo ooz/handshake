@@ -6,9 +6,9 @@ window.onload = function() {
     const EXTENSION_SPEED = 2000.0;
 
     // Person types
-    const FIRST_PERSON = 'alien';
+    const FIRST_PERSON = 'granny';
     //const PERSONS = ['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'];
-    const PERSONS = ['alien'];
+    const PERSONS = ['granny'];
 
     // Head idling
     const IDLE_MAX_DISTANCE = 2.0;
@@ -298,6 +298,10 @@ window.onload = function() {
         game.load.image('arm-stone-dirty', 'assets/hand/hand-stone-poisoned.png');
 
         // Audio
+        game.load.audio('granny-intro', ['assets/granny/granny-intro.ogg']);
+        game.load.audio('granny-positive', ['assets/granny/granny-positiv.ogg']);
+        game.load.audio('granny-negative', ['assets/granny/granny-negativ.ogg']);
+
         game.load.audio('alien-intro', ['assets/alien/alien-intro.ogg']);
         game.load.audio('alien-positive', ['assets/alien/alien-positiv.ogg']);
         game.load.audio('alien-negative', ['assets/alien/alien-negativ.ogg']);
@@ -320,6 +324,9 @@ window.onload = function() {
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
         // Create sounds
+        sounds.granny.intro = game.add.audio('granny-intro');
+        sounds.granny.positive = game.add.audio('granny-positive');
+        sounds.granny.negative = game.add.audio('granny-negative');
         sounds.alien.intro = game.add.audio('alien-intro');
         sounds.alien.positive = game.add.audio('alien-positive');
         sounds.alien.negative = game.add.audio('alien-negative');
