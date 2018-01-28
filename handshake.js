@@ -372,7 +372,7 @@ window.onload = function() {
         sprite.visibility = true;
         sprite.body.velocity.x = sprite.data.exitStrategy * 150;
 
-        if (sprite.x > 2 * WIDTH || sprite.x < -2 * WIDTH) {
+        if (sprite.x > 1.5 * WIDTH || sprite.x < -0.5 * WIDTH) {
             people.fadeoutQueue.removeChild(sprite);
             sprite.destroy();
             people.queue.add(newPerson(randomItem(['businessman', 'punk'])));
