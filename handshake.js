@@ -6,9 +6,8 @@ window.onload = function() {
     const EXTENSION_SPEED = 2000.0;
 
     // Person types
-    const FIRST_PERSON = 'nazi';
-    //const PERSONS = ['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'];
-    const PERSONS = ['nazi'];
+    const FIRST_PERSON = 'businessman';
+    const PERSONS = ['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'];
 
     // Head idling
     const IDLE_MAX_DISTANCE = 2.0;
@@ -300,6 +299,10 @@ window.onload = function() {
         game.load.image('arm-stone-dirty', 'assets/hand/hand-stone-poisoned.png');
 
         // Audio
+        game.load.audio('businessman-intro', ['assets/businessman/businessman-intro.ogg']);
+        game.load.audio('businessman-positive', ['assets/businessman/businessman-positiv.ogg']);
+        game.load.audio('businessman-negative', ['assets/businessman/businessman-negativ.ogg']);
+
         game.load.audio('granny-intro', ['assets/granny/granny-intro.ogg']);
         game.load.audio('granny-positive', ['assets/granny/granny-positiv.ogg']);
         game.load.audio('granny-negative', ['assets/granny/granny-negativ.ogg']);
@@ -334,6 +337,9 @@ window.onload = function() {
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
         // Create sounds
+        sounds.businessman.intro = game.add.audio('businessman-intro');
+        sounds.businessman.positive = game.add.audio('businessman-positive');
+        sounds.businessman.negative = game.add.audio('businessman-negative');
         sounds.granny.intro = game.add.audio('granny-intro');
         sounds.granny.positive = game.add.audio('granny-positive');
         sounds.granny.negative = game.add.audio('granny-negative');
@@ -744,7 +750,6 @@ window.onload = function() {
         let isNazi = armToRetreat.sprite.name === 'nazi';
         if (isNazi) {
             stopAngle = 180;
-            console.log('found nazi to retreat');
         }
 
         if (!isNazi) {
