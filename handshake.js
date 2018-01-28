@@ -268,7 +268,6 @@ window.onload = function() {
         controls.nextHandButton = game.add.button(0, HEIGHT - 60, 'button-scissors', onNextHand, this, 2, 1, 0);
 
         // Input
-        game.input.mouse.enabled = !game.device.mspointer;
         arm.sprite.inputEnabled = true;
         arm.sprite.events.onInputDown.add(onArmMove, this);
         game.input.onDown.add(onDown, this);
