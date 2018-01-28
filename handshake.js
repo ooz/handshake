@@ -167,6 +167,7 @@ window.onload = function() {
         people.primary.head.sprite.destroy();
         people.primary.arm.sprite.destroy();
         people.primary.sprite.destroy();
+        people.primary.sprite = null;
     }
 
     function newExpectation(happys, ouchs, stamina, power=10, shakables=[0], multiplier=1) {
@@ -271,6 +272,7 @@ window.onload = function() {
         controls.shake.onDown.add(onShake, this);
         controls.mouse = game.input.activePointer;
         game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(swapArm, this);
+        game.input.keyboard.addKey(Phaser.Keyboard.P).onDown.add(powerShake, this);
     }
 
     function render() {
@@ -290,11 +292,6 @@ window.onload = function() {
     function onArmMove() {
         // Arm movement state
         arm.move = true;
-        if (arm.extended) {
-            console.log("collapsing");
-        } else {
-            console.log("extending");
-        }
     }
 
     function onShake() {
@@ -308,24 +305,34 @@ window.onload = function() {
 
     function swapArm() {
         if (!arm.extended) {
-            arm.type += 1;
-            arm.type = arm.type % 3;
-            switch(arm.type) {
-                case 1:
-                    arm.sprite.loadTexture('arm-scissor', 0, false);
-                    controls.nextHandButton.loadTexture('button-stone', 0, false);
-                    break;
-                case 2:
-                    arm.sprite.loadTexture('arm-stone', 0, false);
-                    controls.nextHandButton.loadTexture('button-paper', 0, false);
-                    break;
-                default:
-                    arm.sprite.loadTexture('arm', 0, false);
-                    controls.nextHandButton.loadTexture('button-scissors', 0, false);
-            }
+            setArmType(arm.type + 1);
         } else {
             onArmMove();
         }
+    }
+    function setArmType(type) {
+        console.log("Setting arm type: " + type);
+        arm.type = type % 3;
+        switch(arm.type) {
+            case 1:
+                arm.sprite.loadTexture('arm-scissor', 0, false);
+                controls.nextHandButton.loadTexture('button-stone', 0, false);
+                break;
+            case 2:
+                arm.sprite.loadTexture('arm-stone', 0, false);
+                controls.nextHandButton.loadTexture('button-paper', 0, false);
+                break;
+            default:
+                arm.sprite.loadTexture('arm', 0, false);
+                controls.nextHandButton.loadTexture('button-scissors', 0, false);
+        }
+    }
+
+    function powerShake() {
+        // Punch!
+        setArmType(2);
+        onArmMove();
+        fadeoutPrimary();
     }
 
     function onGyro(o) {
@@ -376,6 +383,8 @@ window.onload = function() {
         people.fadeoutQueue.forEach(updateFadeoutPerson, this);
     }
     function updateBackgroundPerson(sprite) {
+        if (people.primary.sprite !== null) { return; }
+
         if (sprite.x < game.world.centerX) {
             sprite.body.velocity.x = 100;
         } else {
@@ -397,7 +406,6 @@ window.onload = function() {
         sprite.scale.setTo(distanceRatio, distanceRatio);
     }
     function updateFadeoutPerson(sprite) {
-        console.log("updating fadeout " + sprite.name + " " + sprite.data.exitStrategy);
         sprite.visibility = true;
         sprite.body.velocity.x = sprite.data.exitStrategy * 150;
 
@@ -409,27 +417,41 @@ window.onload = function() {
     }
 
     function handover(sprite) {
+        /*
         oldPrimaryType = null;
         if (people.primary.sprite !== null) {
             oldPrimaryType = people.primary.sprite.name;
         }
+        */
         newPrimaryType = sprite.name;
 
         people.queue.removeChild(sprite);
         sprite.destroy();
+        /*
         if (people.primary.sprite !== null) {
             destroyPrimary();
         }
+        */
+        fadeoutPrimary();
 
         newPrimary(newPrimaryType);
 
+        /*
         if (people.primary.sprite !== null) {
             people.fadeoutQueue.add(newExitPerson(oldPrimaryType));
         }
+        */
 
         arm.sprite.bringToTop();
 
         people.primary.arm.sprite.bringToTop();
+    }
+
+    function fadeoutPrimary() {
+        if (people.primary.sprite !== null) {
+            people.fadeoutQueue.add(newExitPerson(people.primary.sprite.name));
+            destroyPrimary();
+        }
     }
 
     function resetArm() {
