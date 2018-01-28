@@ -6,6 +6,11 @@ window.onload = function() {
     const EXTENSION_SPEED = 2000.0;
     const IDLE_SPEED = 8.0;
 
+    // Head idling
+    const MAX_DISTANCE = 5.0;
+    const IDLE_MIN_SPEED = 10.0;
+    const IDLE_MAX_SPEED = 50.0;
+
     const ARM_DEFAULT_ANGLE = -33.0;
     const PEOPLE_ARM_DEFAULT_ANGLE = ARM_DEFAULT_ANGLE - 15;
     const ARM_IDLE_AMPLITUDE = 2.0;
@@ -129,11 +134,13 @@ window.onload = function() {
         people.primary.head.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -108, -33);
         people.primary.head.sprite.anchor.setTo(0.5, 1.0);
         people.primary.head.sprite.name = kind;
+        people.primary.head.origin = [people.primary.head.sprite.x, people.primary.head.sprite.y];
         people.primary.arm.sprite = game.add.sprite(0, 0, kind + '-arm');
         people.primary.arm.sprite.alignIn(people.primary.body.sprite, Phaser.TOP_LEFT, -18, -113);
         people.primary.arm.sprite.anchor.setTo(0.5, 17.0 / 137.0);
         people.primary.arm.sprite.angle = PEOPLE_ARM_DEFAULT_ANGLE;
 
+        game.physics.enable(people.primary.head.sprite, Phaser.Physics.ARCADE);
         game.physics.enable(people.primary.sprite, Phaser.Physics.ARCADE);
         game.physics.enable(people.primary.arm.sprite, Phaser.Physics.ARCADE);
 
@@ -485,6 +492,9 @@ window.onload = function() {
     }
     function randomItem(items) {
         return items[Math.floor(Math.random() * items.length)];
+    }
+    function distance(x1, y1, x2, y2) {
+        return Phaser.Math.distance(x1, y1, x2, y2);
     }
 
     function translateAnchor(sprite) {
