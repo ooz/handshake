@@ -495,7 +495,7 @@ window.onload = function() {
         }
     }
     function reduceArmPowerAfterPowerShake() {
-        let penalty = Math.max(POWER_SHAKE_PENALTY, Math.abs(arm.power * POWER_SHAKE_PENALTY_MULTIPLIER));
+        let penalty = Math.max(POWER_SHAKE_PENALTY, Math.round(Math.abs(arm.power * POWER_SHAKE_PENALTY_MULTIPLIER)));
         arm.reducePower(penalty);
     }
 
