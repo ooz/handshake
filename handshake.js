@@ -6,7 +6,7 @@ window.onload = function() {
     const EXTENSION_SPEED = 2000.0;
 
     // Person types
-    const FIRST_PERSON = 'businessman';
+    const FIRST_PERSON = 'alien';
     //const PERSONS = ['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'];
     const PERSONS = ['alien'];
 
@@ -294,8 +294,8 @@ window.onload = function() {
         game.load.image('arm-scissor', 'assets/hand/hand-scissor.png');
         game.load.image('arm-stone', 'assets/hand/hand-stone.png');
         game.load.image('arm-paper-dirty', 'assets/hand/hand-paper-poisoned.png');
-        game.load.image('arm-scissor-dirty', 'assets/hand/hand-scissor-dirty.png');
-        game.load.image('arm-stone-dirty', 'assets/hand/hand-stone-dirty.png');
+        game.load.image('arm-scissor-dirty', 'assets/hand/hand-scissor-poisoned.png');
+        game.load.image('arm-stone-dirty', 'assets/hand/hand-stone-poisoned.png');
 
         // Audio
         game.load.audio('alien-intro', ['assets/alien/alien-intro.ogg']);
