@@ -212,6 +212,14 @@ window.onload = function() {
         game.load.image('punk-body', 'assets/punk/punk-body.png');
         game.load.image('punk-arm', 'assets/punk/punk-arm-lower.png');
 
+        game.load.image('nazi', 'assets/nazi/nazi-complete.png');
+        game.load.image('nazi-head', 'assets/nazi/head.png');
+        game.load.image('nazi-head-idle', 'assets/nazi/head-idle.png');
+        game.load.image('nazi-head-happy', 'assets/nazi/head-happy.png');
+        game.load.image('nazi-head-ouch', 'assets/nazi/head-ouch.png');
+        game.load.image('nazi-body', 'assets/nazi/nazi-body.png');
+        game.load.image('nazi-arm', 'assets/nazi/nazi-arm.png');
+
         game.load.image('alien', 'assets/alien/alien-complete.png');
         game.load.image('alien-head', 'assets/alien/head.png');
         game.load.image('alien-head-idle', 'assets/alien/head-idle.png');
@@ -242,7 +250,7 @@ window.onload = function() {
 
         // Background and fadeout people
         people.queue = game.add.group();
-        people.queue.add(newPerson('punk'));
+        people.queue.add(newPerson('businessman'));
         people.fadeoutQueue = game.add.group();
 
         // Primary person
@@ -412,7 +420,7 @@ window.onload = function() {
         if (sprite.x > 1.5 * WIDTH || sprite.x < -0.5 * WIDTH) {
             people.fadeoutQueue.removeChild(sprite);
             sprite.destroy();
-            people.queue.add(newPerson(randomItem(['businessman', 'punk', 'granny', 'alien', 'rapper'])));
+            people.queue.add(newPerson(randomItem(['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'])));
         }
     }
 
