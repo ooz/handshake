@@ -9,6 +9,9 @@ window.onload = function() {
     const IDLE_MAX_DISTANCE = 2.0;
     const IDLE_HEAD_SPEED = 5.0;
 
+    const IDLE_BLINK_DURATION = 150.0; // ms
+    const IDLE_BLINK_WAIT = 3000.0; // ms
+
     // Arms and shaking
     const ARM_DEFAULT_ANGLE = -33.0;
     const ARM_IDLE_SPEED = 8.0;
@@ -75,6 +78,7 @@ window.onload = function() {
             head: {},
             sprite: null,
             expectation: {},
+            timeWithoutBlink: 0
         },
         queue: null,
         fadeoutQueue: null
@@ -144,6 +148,8 @@ window.onload = function() {
         game.physics.enable(people.primary.head.sprite, Phaser.Physics.ARCADE);
         game.physics.enable(people.primary.sprite, Phaser.Physics.ARCADE);
         game.physics.enable(people.primary.arm.sprite, Phaser.Physics.ARCADE);
+
+        people.primary.timeWithoutBlink = 0.0;
 
         if (kind === 'businessman') {
             people.primary.expectation = newExpectation([0], [1, 2], 5000);
@@ -363,8 +369,10 @@ window.onload = function() {
         }
 
         updateQueuedPeople();
+
         updateArm();
 
+        updatePrimary();
         updatePrimaryIdle();
     }
 
@@ -379,6 +387,23 @@ window.onload = function() {
         } else if (round(headDistance) === 0.0) {
             // Reset and start idling again
             people.primary.head.sprite.body.velocity.y = IDLE_HEAD_SPEED;
+        }
+
+        // Blinking
+        let headState = people.primary.head.sprite.key;
+        if (arm.extended && (headState.endsWith('happy') || headState.endsWith('ouch'))) { return; }
+        people.primary.timeWithoutBlink += game.time.elapsed;
+        setPrimaryIdleTexture();
+    }
+    function setPrimaryIdleTexture() {
+        if (people.primary.timeWithoutBlink > IDLE_BLINK_WAIT) {
+            // Blink
+            people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-idle', 0, false);
+            people.primary.sprite.name + '-idle'
+            people.primary.timeWithoutBlink = 0.0;
+        } else if (people.primary.timeWithoutBlink > IDLE_BLINK_DURATION) {
+            // Revert back to open eyes
+            people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head', 0, false);
         }
     }
 
@@ -486,7 +511,9 @@ window.onload = function() {
             powerShake();
             arm.gyroMagnitude = 0.0;
         }
+    }
 
+    function updatePrimary() {
         if (people.primary.sprite == null) { return; }
         if (arm.extended) {
             if (people.primary.expectation.ouchTypes.includes(arm.type)) {
@@ -502,7 +529,7 @@ window.onload = function() {
                 }
             }
         } else {
-            people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head', 0, false);
+            setPrimaryIdleTexture();
         }
     }
 
