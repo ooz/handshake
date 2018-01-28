@@ -25,9 +25,8 @@ window.onload = function() {
     const ARM_MIN_POS = {
         x: 1.7 * WIDTH / 2.0,
         y: 1.7 * HEIGHT / 2.0
-
     };
-    const POWER_SHAKE_PENALTY = 5;
+    const POWER_SHAKE_PENALTY = 10;
     const POWER_SHAKE_PENALTY_MULTIPLIER = 0.1;
 
     var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', {
@@ -62,6 +61,7 @@ window.onload = function() {
         shake: false,
         idleUp: true,
         gyroMagnitude: 0.0,
+        disease: '',
         isIdle: function() {
             return !this.extended && !this.move;
         },
@@ -262,9 +262,12 @@ window.onload = function() {
         game.load.image('rapper-body', 'assets/rapper/rapper-body.png');
         game.load.image('rapper-arm', 'assets/rapper/rapper-arm.png');
 
-        game.load.image('arm', 'assets/hand/hand-paper.png');
+        game.load.image('arm-paper', 'assets/hand/hand-paper.png');
         game.load.image('arm-scissor', 'assets/hand/hand-scissor.png');
         game.load.image('arm-stone', 'assets/hand/hand-stone.png');
+        game.load.image('arm-paper-dirty', 'assets/hand/hand-paper-dirty.png');
+        game.load.image('arm-scissor-dirty', 'assets/hand/hand-scissor-dirty.png');
+        game.load.image('arm-stone-dirty', 'assets/hand/hand-stone-dirty.png');
     }
 
     function create () {
@@ -283,7 +286,7 @@ window.onload = function() {
         //newPrimary('businessman');
 
         // Arm
-        arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm');
+        arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm-paper');
         game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
         resetArm();
 
@@ -307,6 +310,8 @@ window.onload = function() {
         controls.mouse = game.input.activePointer;
         game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(swapArm, this);
         game.input.keyboard.addKey(Phaser.Keyboard.P).onDown.add(powerShake, this);
+        game.input.keyboard.addKey(Phaser.Keyboard.H).onDown.add(gesundheit, this);
+        game.input.keyboard.addKey(Phaser.Keyboard.M).onDown.add(takeMeds, this);
 
         // "UI"
         controls.power = game.add.text(6, 6, '', { font: "20pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
@@ -351,15 +356,15 @@ window.onload = function() {
         arm.type = type % 3;
         switch(arm.type) {
             case 1:
-                arm.sprite.loadTexture('arm-scissor', 0, false);
+                arm.sprite.loadTexture('arm-scissor' + arm.disease, 0, false);
                 controls.nextHandButton.loadTexture('button-stone', 0, false);
                 break;
             case 2:
-                arm.sprite.loadTexture('arm-stone', 0, false);
+                arm.sprite.loadTexture('arm-stone' + arm.disease, 0, false);
                 controls.nextHandButton.loadTexture('button-paper', 0, false);
                 break;
             default:
-                arm.sprite.loadTexture('arm', 0, false);
+                arm.sprite.loadTexture('arm-paper' + arm.disease, 0, false);
                 controls.nextHandButton.loadTexture('button-scissors', 0, false);
         }
     }
@@ -369,6 +374,17 @@ window.onload = function() {
         setArmType(2);
         onArmMove();
         fadeoutPrimary(true);
+    }
+
+    function takeMeds() {
+        arm.disease = '';
+        setArmType(arm.type); // Refresh texture
+        reduceArmPowerAfterCheat();
+    }
+
+    function gesundheit() {
+        arm.disease = '-dirty';
+        setArmType(arm.type); // Refresh texture
     }
 
     function onGyro(o) {
@@ -488,13 +504,13 @@ window.onload = function() {
     function fadeoutPrimary(powerMove=false) {
         if (people.primary.sprite !== null) {
             if (powerMove) {
-                reduceArmPowerAfterPowerShake();
+                reduceArmPowerAfterCheat();
             }
             people.fadeoutQueue.add(newExitPerson(people.primary.sprite.name));
             destroyPrimary();
         }
     }
-    function reduceArmPowerAfterPowerShake() {
+    function reduceArmPowerAfterCheat() {
         let penalty = Math.max(POWER_SHAKE_PENALTY, Math.round(Math.abs(arm.power * POWER_SHAKE_PENALTY_MULTIPLIER)));
         arm.reducePower(penalty);
     }
