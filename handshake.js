@@ -5,6 +5,11 @@ window.onload = function() {
     const WIDTH_HEIGHT_RATIO = WIDTH / HEIGHT;
     const EXTENSION_SPEED = 2000.0;
 
+    // Person types
+    const FIRST_PERSON = 'rapper';
+    //const PERSONS = ['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'];
+    const PERSONS = ['rapper'];
+
     // Head idling
     const IDLE_MAX_DISTANCE = 2.0;
     const IDLE_HEAD_SPEED = 5.0;
@@ -77,7 +82,6 @@ window.onload = function() {
         isTooCollapsed: function() {
             return this.sprite.x > WIDTH || this.sprite.y > HEIGHT;
         },
-
         isPaperExtended: function() {
             return this.extended && this.type == 0;
         },
@@ -97,7 +101,19 @@ window.onload = function() {
             head: {},
             sprite: null,
             expectation: {},
-            timeWithoutBlink: 0
+            timeWithoutBlink: 0,
+            playIntro: function() {
+                if (this.sprite == null) { return; }
+                dispatchAudio(sounds[this.sprite.name].intro);
+            },
+            playPositive: function() {
+                if (this.sprite == null) { return; }
+                dispatchAudio(sounds[this.sprite.name].positive);
+            },
+            playNegative: function() {
+                if (this.sprite == null) { return; }
+                dispatchAudio(sounds[this.sprite.name].negative);
+            },
         },
         queue: null,
         fadeoutQueue: null
@@ -111,6 +127,16 @@ window.onload = function() {
             return this.shake.isDown || this.mouse.isDown;
         },
         power: ''
+    }
+
+    var sounds = {
+        businessman: {},
+        granny: {},
+        punk: {},
+        nazi: {},
+        rapper: {},
+        alien: {},
+        arm: {}
     }
 
     function newArm(defaultAngle, angleMagnitude) {
@@ -185,6 +211,7 @@ window.onload = function() {
             people.primary.expectation = newExpectation([0], [1, 2], 10000);
         }
 
+        people.primary.playIntro();
         setPrimaryVisible(true);
         people.primary.sprite.kill();
     }
@@ -268,6 +295,15 @@ window.onload = function() {
         game.load.image('arm-paper-dirty', 'assets/hand/hand-paper-dirty.png');
         game.load.image('arm-scissor-dirty', 'assets/hand/hand-scissor-dirty.png');
         game.load.image('arm-stone-dirty', 'assets/hand/hand-stone-dirty.png');
+
+        // Audio
+        game.load.audio('rapper-intro', ['assets/rapper/rapper-intro.mp3']);
+        game.load.audio('rapper-positive', ['assets/rapper/rapper-positiv-bro.ogg']);
+        game.load.audio('rapper-negative', ['assets/rapper/rapper-negativ.mp3']);
+
+        game.load.audio('arm-punch', ['assets/audio/system-punch-hard.ogg']);
+        game.load.audio('arm-cough', ['assets/audio/system-husten.ogg']);
+        game.load.audio('arm-heal', ['assets/audio/system-handclean.ogg']);
     }
 
     function create () {
@@ -277,9 +313,17 @@ window.onload = function() {
         // Maintain aspect ratio
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 
+        // Create sounds
+        sounds.rapper.intro = game.add.audio('rapper-intro');
+        sounds.rapper.positive = game.add.audio('rapper-positive');
+        sounds.rapper.negative = game.add.audio('rapper-negative');
+        sounds.arm.punch = game.add.audio('arm-punch');
+        sounds.arm.heal = game.add.audio('arm-heal');
+        sounds.arm.cough = game.add.audio('arm-cough');
+
         // Background and fadeout people
         people.queue = game.add.group();
-        people.queue.add(newPerson('businessman'));
+        people.queue.add(newPerson(FIRST_PERSON));
         people.fadeoutQueue = game.add.group();
 
         // Primary person
@@ -321,6 +365,7 @@ window.onload = function() {
     function render() {
         //game.debug.inputInfo(32.0, 32.0);
         debug("shakeTime " + round(arm.shakeTime));
+        game.debug.sound(6, 40);
     }
 
     function onDown() {
@@ -379,12 +424,14 @@ window.onload = function() {
     function takeMeds() {
         arm.disease = '';
         setArmType(arm.type); // Refresh texture
+        dispatchAudio(sounds.arm.heal);
         reduceArmPowerAfterCheat();
     }
 
     function gesundheit() {
         arm.disease = '-dirty';
         setArmType(arm.type); // Refresh texture
+        dispatchAudio(sounds.arm.cough);
     }
 
     function onGyro(o) {
@@ -484,7 +531,7 @@ window.onload = function() {
         if (sprite.x > 1.5 * WIDTH || sprite.x < -0.5 * WIDTH) {
             people.fadeoutQueue.removeChild(sprite);
             sprite.destroy();
-            people.queue.add(newPerson(randomItem(['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'])));
+            people.queue.add(newPerson(randomItem(PERSONS)));
         }
     }
 
@@ -568,6 +615,7 @@ window.onload = function() {
         }
         if (arm.extended) {
             if (people.primary.expectation.ouchTypes.includes(arm.type)) {
+                people.primary.playNegative();
                 people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-ouch', 0, false);
                 retreat(people.primary.arm)
             } else if (arm.shake || controls.pressesShake()) {
@@ -575,6 +623,7 @@ window.onload = function() {
 
                 if (people.primary.expectation.happyTypes.includes(arm.type)) {
                     shake(people.primary.arm, ARM_IDLE_SPEED * 10 + 5, people.primary.arm.angleMagnitude, -1.0);
+                    people.primary.playPositive();
                     people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-happy', 0, false);
                 }
             }
@@ -665,6 +714,14 @@ window.onload = function() {
     }
     function distance(x1, y1, x2, y2) {
         return Phaser.Math.distance(x1, y1, x2, y2);
+    }
+
+    var lastAudio = undefined;
+    function dispatchAudio(audio) {
+        if (audio != lastAudio) {
+            audio.play('', 0, 1, false, false);
+            lastAudio = audio;
+        }
     }
 
 };
