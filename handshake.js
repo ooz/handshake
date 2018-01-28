@@ -211,6 +211,22 @@ window.onload = function() {
         game.load.image('punk-body', 'assets/punk/punk-body.png');
         game.load.image('punk-arm', 'assets/punk/punk-arm-lower.png');
 
+        game.load.image('alien', 'assets/alien/alien-complete.png');
+        game.load.image('alien-head', 'assets/alien/head.png');
+        game.load.image('alien-head-idle', 'assets/alien/head-idle.png');
+        game.load.image('alien-head-happy', 'assets/alien/head-happy.png');
+        game.load.image('alien-head-ouch', 'assets/alien/head-ouch.png');
+        game.load.image('alien-body', 'assets/alien/alien-body.png');
+        game.load.image('alien-arm', 'assets/alien/alien-arm.png');
+
+        game.load.image('rapper', 'assets/rapper/rapper-complete.png');
+        game.load.image('rapper-head', 'assets/rapper/head.png');
+        game.load.image('rapper-head-idle', 'assets/rapper/head-idle.png');
+        game.load.image('rapper-head-happy', 'assets/rapper/head-happy.png');
+        game.load.image('rapper-head-ouch', 'assets/rapper/head-ouch.png');
+        game.load.image('rapper-body', 'assets/rapper/rapper-body.png');
+        game.load.image('rapper-arm', 'assets/rapper/rapper-arm.png');
+
         game.load.image('arm', 'assets/hand/hand-paper.png');
         game.load.image('arm-scissor', 'assets/hand/hand-scissor.png');
         game.load.image('arm-stone', 'assets/hand/hand-stone.png');
@@ -389,7 +405,7 @@ window.onload = function() {
         if (sprite.x > 1.5 * WIDTH || sprite.x < -0.5 * WIDTH) {
             people.fadeoutQueue.removeChild(sprite);
             sprite.destroy();
-            people.queue.add(newPerson(randomItem(['businessman', 'punk', 'granny'])));
+            people.queue.add(newPerson(randomItem(['businessman', 'punk', 'granny', 'alien', 'rapper'])));
         }
     }
 
