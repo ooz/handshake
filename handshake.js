@@ -25,7 +25,10 @@ window.onload = function() {
     const ARM_MIN_POS = {
         x: 1.7 * WIDTH / 2.0,
         y: 1.7 * HEIGHT / 2.0
+
     };
+    const POWER_SHAKE_PENALTY = 5;
+    const POWER_SHAKE_PENALTY_MULTIPLIER = 0.1;
 
     var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', {
         preload: preload,
@@ -36,6 +39,20 @@ window.onload = function() {
 
     var arm = {
         power: 0.0,
+        setPower: function(newPower) {
+            this.power = newPower;
+            controls.power.setText('' + this.power);
+        },
+        addPower: function(toAdd) {
+            this.setPower(this.power + toAdd);
+        },
+        reducePower: function(penalty) {
+            if (this.power >= 0.0) {
+                this.addPower(-1.0 * penalty);
+            } else {
+                this.addPower(penalty);
+            }
+        },
         multiplier: 1.0,
         shakeTime: 0.0, // ms
         type: 0, // 0 Paper, 1 scissor, 2 stone
@@ -92,7 +109,8 @@ window.onload = function() {
         mouse: null,
         pressesShake: function() {
             return this.shake.isDown || this.mouse.isDown;
-        }
+        },
+        power: ''
     }
 
     function newArm(defaultAngle, angleMagnitude) {
@@ -289,12 +307,15 @@ window.onload = function() {
         controls.mouse = game.input.activePointer;
         game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(swapArm, this);
         game.input.keyboard.addKey(Phaser.Keyboard.P).onDown.add(powerShake, this);
+
+        // "UI"
+        controls.power = game.add.text(6, 6, '', { font: "20pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
+        arm.setPower(0);
     }
 
     function render() {
         //game.debug.inputInfo(32.0, 32.0);
-        debug("shakeTime " + round(arm.shakeTime), 2);
-        debug("powr " + round(arm.power));
+        debug("shakeTime " + round(arm.shakeTime));
     }
 
     function onDown() {
@@ -347,7 +368,7 @@ window.onload = function() {
         // Punch!
         setArmType(2);
         onArmMove();
-        fadeoutPrimary();
+        fadeoutPrimary(true);
     }
 
     function onGyro(o) {
@@ -376,6 +397,8 @@ window.onload = function() {
 
         updatePrimary();
         updatePrimaryIdle();
+
+        updatePowerAndStamina();
     }
 
     function updatePrimaryIdle() {
@@ -462,11 +485,18 @@ window.onload = function() {
         people.primary.arm.sprite.bringToTop();
     }
 
-    function fadeoutPrimary() {
+    function fadeoutPrimary(powerMove=false) {
         if (people.primary.sprite !== null) {
+            if (powerMove) {
+                reduceArmPowerAfterPowerShake();
+            }
             people.fadeoutQueue.add(newExitPerson(people.primary.sprite.name));
             destroyPrimary();
         }
+    }
+    function reduceArmPowerAfterPowerShake() {
+        let penalty = Math.max(POWER_SHAKE_PENALTY, Math.abs(arm.power * POWER_SHAKE_PENALTY_MULTIPLIER));
+        arm.reducePower(penalty);
     }
 
     function resetArm() {
@@ -581,6 +611,14 @@ window.onload = function() {
         if (armToShake.sprite.angle < minAngle) {
             armToShake.sprite.angle = minAngle;
             arm.idleUp = true;
+        }
+    }
+
+    function updatePowerAndStamina() {
+        if (people.primary.expectation.stamina - arm.shakeTime <= 0) {
+            arm.addPower((people.primary.expectation.stamina / 1000) * people.primary.expectation.powerGain * arm.multiplier);
+            arm.shakeTime = 0.0;
+            fadeoutPrimary();
         }
     }
 
