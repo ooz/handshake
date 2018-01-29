@@ -138,7 +138,8 @@ window.onload = function() {
         pressesShake: function() {
             return this.shake.isDown || this.mouse.isDown;
         },
-        power: ''
+        power: '',
+        logo: null
     }
 
     var sounds = {
@@ -317,6 +318,8 @@ window.onload = function() {
         game.load.image('arm-scissor-dirty', 'assets/hand/hand-scissor-poisoned.png');
         game.load.image('arm-stone-dirty', 'assets/hand/hand-stone-poisoned.png');
 
+        game.load.image('logo', 'assets/handshake-logo.png');
+
         // Audio
         game.load.audio('businessman-intro', ['assets/businessman/businessman-intro.ogg']);
         game.load.audio('businessman-positive', ['assets/businessman/businessman-positiv.ogg']);
@@ -419,6 +422,18 @@ window.onload = function() {
         // "UI"
         controls.power = game.add.text(6, 6, '', { font: "20pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
         arm.setPower(0);
+        controls.logo = game.add.image(game.world.centerX, game.world.centerY, 'logo');
+        controls.logo.anchor.setTo(0.5, 0.5);
+
+        // Pause
+        game.onResume.add(function() {
+            controls.logo.kill();
+        });
+        game.onPause.add(function() {
+            controls.logo.revive();
+            controls.logo.bringToTop();
+        });
+        game.paused = true;
     }
 
     function render() {
@@ -446,6 +461,7 @@ window.onload = function() {
     }
 
     function onShake() {
+        if (game.paused) { return; }
         if (!arm.extended) {
             onArmMove();
             return;
@@ -456,6 +472,7 @@ window.onload = function() {
     }
 
     function swapArm() {
+        if (game.paused) { return; }
         if (!arm.extended) {
             setArmType(arm.type + 1);
         } else {
@@ -480,6 +497,7 @@ window.onload = function() {
     }
 
     function powerShake() {
+        if (game.paused) { return; }
         // Punch!
         setArmType(2);
         onArmMove();
@@ -488,6 +506,7 @@ window.onload = function() {
     }
 
     function takeMeds() {
+        if (game.paused) { return; }
         arm.disease = '';
         setArmType(arm.type); // Refresh texture
         dispatchAudio(sounds.arm.heal);
@@ -495,6 +514,7 @@ window.onload = function() {
     }
 
     function gesundheit() {
+        if (game.paused) { return; }
         arm.disease = '-dirty';
         setArmType(arm.type); // Refresh texture
         dispatchAudio(sounds.arm.cough);
