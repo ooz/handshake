@@ -334,9 +334,9 @@ window.onload = function() {
         game.load.audio('alien-positive', ['assets/alien/alien-positiv.ogg']);
         game.load.audio('alien-negative', ['assets/alien/alien-negativ.ogg']);
 
-        game.load.audio('rapper-intro', ['assets/rapper/rapper-intro.mp3']);
+        game.load.audio('rapper-intro', ['assets/rapper/rapper-intro.ogg']);
         game.load.audio('rapper-positive', ['assets/rapper/rapper-positiv-bro.ogg']);
-        game.load.audio('rapper-negative', ['assets/rapper/rapper-negativ.mp3']);
+        game.load.audio('rapper-negative', ['assets/rapper/rapper-negativ.ogg']);
 
         game.load.audio('arm-punch', ['assets/audio/system-punch-hard.ogg']);
         game.load.audio('arm-punch-mega', ['assets/audio/system-punch-strong.ogg']);
