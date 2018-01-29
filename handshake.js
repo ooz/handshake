@@ -220,6 +220,7 @@ window.onload = function() {
         game.physics.enable(people.primary.arm.sprite, Phaser.Physics.ARCADE);
 
         people.primary.timeWithoutBlink = 0.0;
+        people.primary.boreout = 0.0;
 
         if (kind === 'businessman') {
             people.primary.expectation = newExpectation([0], [1, 2], 4000);
@@ -449,6 +450,7 @@ window.onload = function() {
         //debug("shakeTime " + round(arm.shakeTime));
         //game.debug.sound(6, 40);
         //debug('karma ' + round(arm.karma));
+        //debug('boreout ' + round(people.primary.boreout));
     }
 
     function onDown() {
@@ -727,7 +729,9 @@ window.onload = function() {
                 people.primary.playNegative();
                 people.primary.head.sprite.loadTexture(people.primary.head.sprite.name + '-head-ouch', 0, false);
                 retreat(people.primary.arm)
+                people.primary.boreout += game.time.elapsed;
             } else if (arm.shake || controls.pressesShake()) {
+                people.primary.boreout = 0.0;
                 shake(arm, ARM_IDLE_SPEED * 10, arm.angleMagnitude);
 
                 if (people.primary.expectation.happyTypes.includes(arm.type)) {
@@ -737,6 +741,7 @@ window.onload = function() {
                 }
             }
         } else {
+            people.primary.boreout += game.time.elapsed;
             setPrimaryIdleTexture();
         }
     }
@@ -789,7 +794,14 @@ window.onload = function() {
     }
 
     function updatePowerAndStamina() {
-        if (people.primary.expectation.stamina - arm.shakeTime <= 0) {
+        if (people.primary.expectation.patience <= people.primary.boreout) {
+            arm.reducePower(Math.abs(people.primary.expectation.powerGain));
+            arm.reduceKarma(1);
+            arm.shakeTime = 0.0;
+            people.primary.boreout = 0.0;
+            fadeoutPrimary();
+
+        } else if (people.primary.expectation.stamina - arm.shakeTime <= 0) {
             arm.addPower((people.primary.expectation.stamina / 1000) * people.primary.expectation.powerGain * arm.multiplier);
             arm.shakeTime = 0.0;
 
