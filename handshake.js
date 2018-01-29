@@ -31,6 +31,7 @@ window.onload = function() {
         y: 1.7 * HEIGHT / 2.0
     };
     const POWER_SHAKE_PENALTY = 10;
+    const POWER_SHAKE_KARMA_PENALTY = 1;
     const POWER_SHAKE_PENALTY_MULTIPLIER = 0.1;
 
     var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', {
@@ -44,7 +45,7 @@ window.onload = function() {
         power: 0.0,
         setPower: function(newPower) {
             this.power = newPower;
-            controls.power.setText('' + this.power);
+            controls.power.setText('' + Math.round(this.power));
         },
         addPower: function(toAdd) {
             this.setPower(this.power + toAdd);
@@ -57,6 +58,14 @@ window.onload = function() {
             }
         },
         multiplier: 1.0,
+        karma: 0, // Positive: kindness, negative: infections
+        reduceKarma: function(penalty) {
+            if (this.karma >= 0.0) {
+                this.karma -= penalty;
+            } else {
+                this.karma += penalty;
+            }
+        },
         shakeTime: 0.0, // ms
         type: 0, // 0 Paper, 1 scissor, 2 stone
         move: false,
@@ -202,13 +211,13 @@ window.onload = function() {
         if (kind === 'businessman') {
             people.primary.expectation = newExpectation([0], [1, 2], 4000);
         } else if (kind === 'punk') {
-            people.primary.expectation = newExpectation([1], [0, 2], 3000, -10);
+            people.primary.expectation = newExpectation([1], [0, 2], 3000, 5000, -10);
         } else if (kind === 'granny') {
             people.primary.expectation = newExpectation([0], [1, 2], 1500);
         } else if (kind === 'nazi') {
-            people.primary.expectation = newExpectation([0], [1, 2], 2000, -10);
+            people.primary.expectation = newExpectation([0], [1, 2], 2000, 5000, -10);
         } else if (kind === 'rapper') {
-            people.primary.expectation = newExpectation([2], [0, 1], 15000);
+            people.primary.expectation = newExpectation([2], [0, 1], 15000, 5000, 10, [], 2);
         } else if (kind === 'alien') {
             let moves = [0, 1, 2];
             let favMove = randomItem(moves);
@@ -228,7 +237,7 @@ window.onload = function() {
         people.primary.sprite = null;
     }
 
-    function newExpectation(happys, ouchs, stamina, power=10, shakables=[0], multiplier=1) {
+    function newExpectation(happys, ouchs, stamina, patience=5000, power=10, shakables=[0], multiplier=1) {
         return {
             happyTypes: happys,
             ouchTypes: ouchs,
@@ -409,6 +418,7 @@ window.onload = function() {
         //game.debug.inputInfo(32.0, 32.0);
         //debug("shakeTime " + round(arm.shakeTime));
         //game.debug.sound(6, 40);
+        debug('karma ' + round(arm.karma));
     }
 
     function onDown() {
@@ -619,6 +629,9 @@ window.onload = function() {
     function reduceArmPowerAfterCheat() {
         let penalty = Math.max(POWER_SHAKE_PENALTY, Math.round(Math.abs(arm.power * POWER_SHAKE_PENALTY_MULTIPLIER)));
         arm.reducePower(penalty);
+
+        let karmaPenalty = Math.max(POWER_SHAKE_KARMA_PENALTY, Math.round(Math.abs(arm.karma * POWER_SHAKE_PENALTY_MULTIPLIER)));
+        arm.reduceKarma(karmaPenalty);
     }
 
     function resetArm() {
@@ -742,8 +755,17 @@ window.onload = function() {
         if (people.primary.expectation.stamina - arm.shakeTime <= 0) {
             arm.addPower((people.primary.expectation.stamina / 1000) * people.primary.expectation.powerGain * arm.multiplier);
             arm.shakeTime = 0.0;
+            if (arm.disease !== '') {
+                arm.karma -= 1;
+            }
+            if (people.primary.sprite.name === 'granny') {
+                arm.karma += 1;
+            }
             fadeoutPrimary();
         }
+
+        // Kindness / infections
+        arm.addPower(arm.karma * (game.time.elapsed / 1000));
     }
 
     function retreat(armToRetreat,
