@@ -51,18 +51,22 @@ window.onload = function() {
             this.setPower(this.power + toAdd);
         },
         reducePower: function(penalty) {
-            if (this.power >= 0.0) {
+            if (Math.abs(this.power) < penalty) {
+                this.setPower(0);
+            } else if (this.power > 0.0) {
                 this.addPower(-1.0 * penalty);
-            } else {
+            } else if (this.power < 0.0) {
                 this.addPower(penalty);
             }
         },
         multiplier: 1.0,
         karma: 0, // Positive: kindness, negative: infections
         reduceKarma: function(penalty) {
-            if (this.karma >= 0.0) {
+            if (Math.abs(this.karma) < penalty) {
+                this.karma = 0;
+            } else if (this.karma > 0.0) {
                 this.karma -= penalty;
-            } else {
+            } else if (this.karma < 0.0) {
                 this.karma += penalty;
             }
         },
