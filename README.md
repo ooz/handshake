@@ -1,5 +1,7 @@
 # Handshake
 
+![Yo, bro!](screenshots/handshake.png)
+
 **Global Game Jam 2018 entry**
 
 Theme: Transmission
