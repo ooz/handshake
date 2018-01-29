@@ -430,6 +430,7 @@ window.onload = function() {
 
     function onDown() {
         // Fullscreen
+        game.paused = false;
         if (!game.scale.isFullScreen) {
             game.scale.startFullScreen(false);
             return;
@@ -516,6 +517,7 @@ window.onload = function() {
 
     function update() {
         if (!game.scale.isFullScreen) {
+            game.paused = true;
             return;
         }
 
