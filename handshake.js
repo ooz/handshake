@@ -34,7 +34,7 @@ window.onload = function() {
     const POWER_SHAKE_KARMA_PENALTY = 1;
     const POWER_SHAKE_PENALTY_MULTIPLIER = 0.1;
 
-    var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', {
+    var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'game-container', {
         preload: preload,
         create: create,
         update: update,
