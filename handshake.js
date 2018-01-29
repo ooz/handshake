@@ -211,18 +211,19 @@ window.onload = function() {
         if (kind === 'businessman') {
             people.primary.expectation = newExpectation([0], [1, 2], 4000);
         } else if (kind === 'punk') {
-            people.primary.expectation = newExpectation([1], [0, 2], 3000, 5000, -10);
+            people.primary.expectation = newExpectation([1], [0, 2], 3000, 5000, 0, -10);
         } else if (kind === 'granny') {
-            people.primary.expectation = newExpectation([0], [1, 2], 1500);
+            people.primary.expectation = newExpectation([0], [1, 2], 1500, 5000, 1);
         } else if (kind === 'nazi') {
-            people.primary.expectation = newExpectation([0], [1, 2], 2000, 5000, -10);
+            people.primary.expectation = newExpectation([0], [1, 2], 2000, 5000, -1, -10);
         } else if (kind === 'rapper') {
-            people.primary.expectation = newExpectation([2], [0, 1], 15000, 5000, 10, [], 2);
+            people.primary.expectation = newExpectation([2], [0, 1], 12000, 5000, 0, 10, [], 2);
         } else if (kind === 'alien') {
             let moves = [0, 1, 2];
             let favMove = randomItem(moves);
             delete moves[favMove];
-            people.primary.expectation = newExpectation([favMove], moves, 10000);
+            let powerGain = randomItem([10, -10]);
+            people.primary.expectation = newExpectation([favMove], moves, 10000, 5000, 0, powerGain);
         }
 
         people.primary.playIntro();
@@ -237,11 +238,13 @@ window.onload = function() {
         people.primary.sprite = null;
     }
 
-    function newExpectation(happys, ouchs, stamina, patience=5000, power=10, shakables=[0], multiplier=1) {
+    function newExpectation(happys, ouchs, stamina, patience=5000, karma=0, power=10, shakables=[0], multiplier=1) {
         return {
             happyTypes: happys,
             ouchTypes: ouchs,
             stamina: stamina,
+            patience: patience,
+            karma: karma,
             powerGain: power,
             shakables: shakables,
             multiplier: multiplier
@@ -755,12 +758,12 @@ window.onload = function() {
         if (people.primary.expectation.stamina - arm.shakeTime <= 0) {
             arm.addPower((people.primary.expectation.stamina / 1000) * people.primary.expectation.powerGain * arm.multiplier);
             arm.shakeTime = 0.0;
+
             if (arm.disease !== '') {
                 arm.karma -= 1;
             }
-            if (people.primary.sprite.name === 'granny') {
-                arm.karma += 1;
-            }
+            arm.karma += people.primary.expectation.karma;
+
             fadeoutPrimary();
         }
 
