@@ -5,6 +5,9 @@ window.onload = function() {
     const WIDTH_HEIGHT_RATIO = WIDTH / HEIGHT;
     const EXTENSION_SPEED = 2000.0;
 
+    const FONT_POSITIVE = { font: "20pt Courier", fill: "#90EE90", stroke: "#006400", strokeThickness: 2 };
+    const FONT_NEGATIVE = { font: "20pt Courier", fill: "#FFA07A", stroke: "#8B0000", strokeThickness: 2 }
+
     // Person types
     const FIRST_PERSON = 'businessman';
     const PERSONS = ['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'];
@@ -46,6 +49,11 @@ window.onload = function() {
         setPower: function(newPower) {
             this.power = newPower;
             controls.power.setText('' + Math.round(this.power));
+            if (this.power >= 0.0) {
+                controls.power.setStyle(FONT_POSITIVE);
+            } else {
+                controls.power.setStyle(FONT_NEGATIVE);
+            }
         },
         addPower: function(toAdd) {
             this.setPower(this.power + toAdd);
@@ -420,7 +428,7 @@ window.onload = function() {
         game.input.keyboard.addKey(Phaser.Keyboard.M).onDown.add(takeMeds, this);
 
         // "UI"
-        controls.power = game.add.text(6, 6, '', { font: "20pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
+        controls.power = game.add.text(6, 6, '', FONT_POSITIVE);
         arm.setPower(0);
         controls.logo = game.add.image(game.world.centerX, game.world.centerY, 'logo');
         controls.logo.anchor.setTo(0.5, 0.5);
