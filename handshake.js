@@ -421,7 +421,7 @@ window.onload = function() {
         //game.debug.inputInfo(32.0, 32.0);
         //debug("shakeTime " + round(arm.shakeTime));
         //game.debug.sound(6, 40);
-        debug('karma ' + round(arm.karma));
+        //debug('karma ' + round(arm.karma));
     }
 
     function onDown() {
