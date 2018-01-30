@@ -87,6 +87,7 @@ window.onload = function() {
         idleUp: true,
         gyroMagnitude: 0.0,
         disease: '',
+        diseaseCharges: 0,
         isIdle: function() {
             return !this.extended && !this.move;
         },
@@ -456,11 +457,6 @@ window.onload = function() {
     }
 
     function render() {
-        //game.debug.inputInfo(32.0, 32.0);
-        //debug("shakeTime " + round(arm.shakeTime));
-        //game.debug.sound(6, 40);
-        //debug('karma ' + round(arm.karma));
-        //debug('boreout ' + round(people.primary.boreout));
     }
 
     function onNextPerson(key, nextPerson) {
@@ -529,17 +525,24 @@ window.onload = function() {
         fadeoutPrimary(true);
     }
 
-    function takeMeds() {
+    function takeMeds(cheat=true) {
         if (game.paused) { return; }
+
         arm.disease = '';
+        arm.diseaseCharges = 0;
         setArmType(arm.type); // Refresh texture
+
         dispatchAudio(sounds.arm.heal);
-        reduceArmPowerAfterCheat();
+
+        if (cheat) {
+            reduceArmPowerAfterCheat();
+        }
     }
 
     function gesundheit() {
         if (game.paused) { return; }
         arm.disease = '-dirty';
+        arm.diseaseCharges = 2;
         setArmType(arm.type); // Refresh texture
         dispatchAudio(sounds.arm.cough);
     }
@@ -826,6 +829,12 @@ window.onload = function() {
 
             if (arm.disease !== '') {
                 arm.karma -= 1;
+            }
+            if (arm.diseaseCharges > 0) {
+                arm.diseaseCharges -= 1;
+                if (arm.diseaseCharges === 0.0) {
+                    takeMeds(false);
+                }
             }
             arm.karma += people.primary.expectation.karma;
 
