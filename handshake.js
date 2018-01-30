@@ -10,7 +10,7 @@ window.onload = function() {
 
     // Person types
     const FIRST_PERSON = 'businessman';
-    const PERSONS = ['businessman', 'punk', 'nazi', 'granny', 'alien', 'rapper'];
+    const PERSONS = ['businessman', 'granny', 'punk', 'nazi', 'rapper', 'alien'];
 
     // Head idling
     const IDLE_MAX_DISTANCE = 2.0;
@@ -147,7 +147,8 @@ window.onload = function() {
             return this.shake.isDown || this.mouse.isDown;
         },
         power: '',
-        logo: null
+        logo: null,
+        nextPerson: -1
     }
 
     var sounds = {
@@ -428,6 +429,15 @@ window.onload = function() {
         game.input.keyboard.addKey(Phaser.Keyboard.H).onDown.add(gesundheit, this);
         game.input.keyboard.addKey(Phaser.Keyboard.M).onDown.add(takeMeds, this);
 
+        // Next person cheats
+        game.input.keyboard.addKey(Phaser.Keyboard.ZERO).onDown.add(onNextPerson, this, 0, 0);
+        game.input.keyboard.addKey(Phaser.Keyboard.FOUR).onDown.add(onNextPerson, this, 0, 1);
+        game.input.keyboard.addKey(Phaser.Keyboard.FIVE).onDown.add(onNextPerson, this, 0, 2);
+        game.input.keyboard.addKey(Phaser.Keyboard.SIX).onDown.add(onNextPerson, this, 0, 3);
+        game.input.keyboard.addKey(Phaser.Keyboard.SEVEN).onDown.add(onNextPerson, this, 0, 4);
+        game.input.keyboard.addKey(Phaser.Keyboard.EIGHT).onDown.add(onNextPerson, this, 0, 5);
+        game.input.keyboard.addKey(Phaser.Keyboard.NINE).onDown.add(onNextPerson, this, 0, 6);
+
         // "UI"
         controls.power = game.add.text(6, 6, '', FONT_POSITIVE);
         arm.setPower(0);
@@ -451,6 +461,10 @@ window.onload = function() {
         //game.debug.sound(6, 40);
         //debug('karma ' + round(arm.karma));
         //debug('boreout ' + round(people.primary.boreout));
+    }
+
+    function onNextPerson(key, nextPerson) {
+        controls.nextPerson = nextPerson - 1; // -1 is default (random next person), other codes map to PERSON array indices
     }
 
     function onDown() {
@@ -639,7 +653,12 @@ window.onload = function() {
         if (sprite.x > 1.5 * WIDTH || sprite.x < -0.5 * WIDTH) {
             people.fadeoutQueue.removeChild(sprite);
             sprite.destroy();
-            people.queue.add(newPerson(randomItem(PERSONS)));
+            if (controls.nextPerson < 0 || controls.nextPerson > 5) {
+                people.queue.add(newPerson(randomItem(PERSONS)));
+            } else {
+                people.queue.add(newPerson(PERSONS[controls.nextPerson]));
+                reduceArmPowerAfterCheat();
+            }
         }
     }
 
