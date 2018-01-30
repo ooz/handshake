@@ -364,7 +364,6 @@ window.onload = function() {
 
     function create () {
         game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'background');
-        //game.stage.backgroundColor = '#aaaa00';
 
         // Maintain aspect ratio
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -399,15 +398,10 @@ window.onload = function() {
         people.queue.add(newPerson(FIRST_PERSON));
         people.fadeoutQueue = game.add.group();
 
-        // Primary person
-        //newPrimary('businessman');
-
         // Arm
         arm.sprite = game.add.sprite(WIDTH, HEIGHT, 'arm-paper');
         game.physics.enable(arm.sprite, Phaser.Physics.ARCADE);
         resetArm();
-
-        //people.primary.arm.sprite.bringToTop();
 
         // Buttons
         controls.nextHandButton = game.add.button(0, HEIGHT - 60, 'button-scissors', onNextHand, this, 2, 1, 0);
@@ -707,11 +701,9 @@ window.onload = function() {
     function updateArm() {
         // Extend
         if (arm.hasToExpand()) {
-            //game.physics.arcade.accelerateToObject(arm.sprite, people.businessman.arm.sprite, EXTENSION_SPEED);
             arm.sprite.body.velocity.x = -1.0 * EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
             arm.sprite.body.velocity.y = -1.0 * EXTENSION_SPEED;
         } else if (arm.hasToCollapse()) {
-            //game.physics.arcade.accelerateToXY(arm.sprite, WIDTH, HEIGHT, EXTENSION_SPEED);
             arm.sprite.body.velocity.x = EXTENSION_SPEED * WIDTH_HEIGHT_RATIO;
             arm.sprite.body.velocity.y = EXTENSION_SPEED;
         }
